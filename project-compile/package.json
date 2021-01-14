@@ -1,0 +1,13 @@
+{
+  "name": "project-compile",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npx babel ../src --out-dir ../build --no-comments"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/cli": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "babel-preset-minify": "^0.5.1"
+  }
+}
