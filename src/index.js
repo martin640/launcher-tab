@@ -5,8 +5,12 @@ const fetchImage = () => {
 	dom.style.backgroundColor = '#333333'
 
 	// setup functions first
+	
 	const error = () => {
-		dom.style.backgroundImage = 'url(bg/1.jpg)'
+		const bgnum = (Math.floor(Math.random() * 6) + 1);
+        	console.log(bgnum);
+        	let dom = document.getElementById("bgimg");
+        	dom.style.backgroundImage =  url(bg/${bgnum}.jpg);
 	}
 
 	fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,abstract,arquitecture,city')
