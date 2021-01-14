@@ -13,13 +13,17 @@ const fetchImage = () => {
         	dom.style.backgroundImage =  `url(bg/${bgnum}.jpg)`;
 	}
 
-	fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,abstract,arquitecture,city')
+	fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,arquitecture,city')
 		.then(resp => resp)
 		.then((imagelists) => {
 			const selectedImage = imagelists.url
+			console.log(selectedImage)
+			if (selectedImage.startsWith("https://images.unsplash.com/source-404")) {
+			  return error()
+			}
 			const dom = document.getElementById("bgimg")
-			dom.style.backgroundImage = `url(${selectedImage})`
-		})
+			dom.style.backgroundImage = url(${selectedImage})
+		  })
 		.catch(error)
 }
 
