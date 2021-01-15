@@ -24,7 +24,8 @@ body, html {
 }
 #status-debug {
     position: absolute;
-    right: 8px; bottom: 8px;
+    right: 0; bottom: 0;
+    padding: 8px;
     color: aquamarine;
     text-shadow: 0 0 8px black;
 }

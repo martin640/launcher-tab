@@ -13,5 +13,10 @@
     "@babel/cli": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "babel-preset-minify": "^0.5.1"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "maintained node versions"
+  ]
 }

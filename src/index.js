@@ -37,7 +37,7 @@ class WidgetBase {
 			`${pY >= 0 ? (pY+1) : pY} / ${pX >= 0 ? (pX+1) : pX} / ${h ? ('span ' + h) : h1} / ${w ? ('span ' + w) : w1}`
 	}
 	update() {
-		this._context._notifyRender()
+		this._context._notifyRender(this)
 		this.render(this._container)
 	}
 	render(container) {
@@ -87,7 +87,7 @@ class ClockWidget extends WidgetBase {
 		this.weatherEl = document.createElement('span')
 		this.secondRowEl.appendChild(this.weatherEl)
 
-		this.timeUpdateTimer = setInterval(() => this.update(), 500)
+		this.timeUpdateTimer = setInterval(() => this.update(), 1000)
 		this.weatherUpdateTimer = setInterval(() => this.fetchWeather(), 900000)
 		this.fetchWeather()
 	}
@@ -225,6 +225,8 @@ class TabContext {
 			counter: 0, counterSnapshot: 0, v: 0,
 			start: Date.now()
 		}
+		this.debugEnabled = true
+		this.debugAlt = false
 		this.updateBackground()
 		this.onLayoutChange = () => {}
 		window.onresize = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
@@ -234,10 +236,41 @@ class TabContext {
 			this.renderStats.counterSnapshot = this.renderStats.counter
 			this.updateDebugWidget()
 		}, 1000)
+
+		const debugEl = document.getElementById('status-debug')
+		debugEl.onmouseenter = () => {
+			this.debugAlt = true
+			for (let i = 0; i < this.widgets.length; i++) {
+				const w = this.widgets[i]
+				w.container.style.outline = "2px dashed #00FF91"
+				w.container.style.backgroundColor = "#00FF9133"
+			}
+		}
+		debugEl.onmouseleave = () => {
+			this.debugAlt = false
+			for (let i = 0; i < this.widgets.length; i++) {
+				const w = this.widgets[i]
+				w.container.style.outline = "unset"
+				w.container.style.backgroundColor = "unset"
+			}
+		}
 	}
 
-	async _notifyRender() {
+	async _notifyRender(src) {
 		this.renderStats.counter++
+		if (this.debugAlt) {
+			if (src.__tmp_timer_id) clearTimeout(src.__tmp_timer_id)
+			src.container.style.outline = "2px dashed #FF00D5"
+			src.__tmp_timer_id = setTimeout(() => {
+				src.__tmp_timer_id = undefined
+				if (this.debugAlt) {
+					src.container.style.outline = "2px dashed #00FF91"
+				} else {
+					src.container.style.outline = "unset"
+					src.container.style.backgroundColor = "unset"
+				}
+			}, 150)
+		}
 		this.updateDebugWidget()
 	}
 
@@ -279,7 +312,7 @@ class TabContext {
 		let data = "debugging enabled"
 		data += `, layout size: [${this.gridSizeInfo.width} × ${this.gridSizeInfo.height}] (${this.gridSizeInfo.columns} × ${this.gridSizeInfo.rows})`
 		data += `, widgets attached: ${this.widgets.length}`
-		data += `, updates: ${this.renderStats.v}/s`
+		data += `, updates/sec: ${this.renderStats.v}`
 
 		document.getElementById('status-debug').innerHTML = data
 	}
@@ -318,10 +351,11 @@ class TabContext {
 	/**
 	 * Unloads all widgets
 	 */
-	unload() {
+	destroy() {
 		for (let i = 0; i < this.widgets.length; i++) {
 			this.widgets[i].unload()
 		}
+		this.widgets.length = 0
 	}
 }
 
