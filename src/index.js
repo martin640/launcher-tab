@@ -215,12 +215,22 @@ class TabContext {
 		}
 		this.widgets = []
 		this.updateBackground()
-		this.updateDebugWidget()
-		window.onresize = () => this.updateDebugWidget();
+		window.onresize = () => this.updateDebugWidget()
+		setTimeout(() => this.updateDebugWidget(), 1000)
 	}
 
 	async updateDebugWidget() {
-		/*const colCount = window.getComputedStyle(gridEl).gridTemplateColumns.split(" ").length;*/
+		const element = document.getElementById('ref-lay-grid')
+		const computedStyle = window.getComputedStyle(element)
+		this.gridSizeInfo.width = element.clientWidth
+		this.gridSizeInfo.height = element.clientHeight
+		this.gridSizeInfo.columns = computedStyle.gridTemplateColumns.split(" ").length
+		this.gridSizeInfo.rows = computedStyle.gridTemplateRows.split(" ").length
+		let data = "debugging enabled"
+		data += `, layout size: [${this.gridSizeInfo.width} × ${this.gridSizeInfo.height}] (${this.gridSizeInfo.columns} × ${this.gridSizeInfo.rows})`
+		data += `, widgets attached: ${this.widgets.length}`
+
+		document.getElementById('status-debug').innerHTML = data
 	}
 
 	async updateBackground() {
@@ -266,6 +276,7 @@ class TabContext {
 			if (widget) {
 				this.widgets.push(widget)
 				widget.update()
+				this.updateDebugWidget()
 				return widget
 			} else
 				return false
