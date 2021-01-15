@@ -92,16 +92,18 @@ class ClockWidget extends WidgetBase {
 		this.fetchWeather()
 	}
 
-	fetchWeather() {
-
-		fetch(`http://ip-api.com/json/?fields=city`)
-			.then(res => res.json())
-			.then(res => {console.log(res.city)})
-	}
+	async fetchWeather() {
 		// change unit to selected by user in dialog or if location = us (default )
-		const unit = "metric"
-		const city = encodeURIComponent("Bratislava")
-		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
+		let city, unit = "metric"
+		try {
+			const ipApiRes = await fetch(`http://ip-api.com/json/?fields=city`)
+			const ipApiJson = await ipApiRes.json()
+			city = ipApiJson.city
+		} catch (e) {
+			return console.warn("Geolocation failed")
+		}
+
+		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
 			.then(res => res.json())
 			.then(res => {
 				let icon = '', weatherId = res.weather[0].id
@@ -237,6 +239,7 @@ class TabContext {
 		this.updateBackground()
 		this.onLayoutChange = () => {}
 		window.onresize = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
+		setTimeout(() => this.probeLayoutInfo(), 500)
 		setTimeout(() => this.probeLayoutInfo(), 1000)
 		setInterval(() => {
 			this.renderStats.v = (this.renderStats.counter - this.renderStats.counterSnapshot)
