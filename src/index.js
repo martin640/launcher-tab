@@ -297,7 +297,7 @@ class TabContext {
 }
 
 window.tabContext = new TabContext()
-window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 2, -1)
+window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
 chrome.topSites.get(res => {
 	for (let i = 0; i < res.length && i < 12; i++) {
 		window.tabContext.createWidget(LinkWidget,
