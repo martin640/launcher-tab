@@ -8,6 +8,7 @@
     "storage",
     "sessions",
     "tabs",
+    "topSites",
     "chrome://favicon/"
   ],
   "chrome_url_overrides": {

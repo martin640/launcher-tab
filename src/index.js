@@ -60,15 +60,47 @@ class ClockWidget extends WidgetBase {
 		this.timeEl.style.textShadow = "0 0 2px gray"
 		gridContainer.appendChild(this.timeEl)
 
+		this.secondRowEl = document.createElement('span')
+		this.secondRowEl.style.display = "block"
+		this.secondRowEl.style.textAlign = "center"
+		this.secondRowEl.style.fontSize = "4vh"
+		this.secondRowEl.style.fontWeight = "200"
+		this.secondRowEl.style.textShadow = "0 0 2px gray"
+		gridContainer.appendChild(this.secondRowEl)
+
 		this.dateEl = document.createElement('span')
-		this.dateEl.style.display = "block"
-		this.dateEl.style.textAlign = "center"
-		this.dateEl.style.fontSize = "4vh"
-		this.dateEl.style.fontWeight = "200"
-		this.dateEl.style.textShadow = "0 0 2px gray"
-		gridContainer.appendChild(this.dateEl)
+		this.secondRowEl.appendChild(this.dateEl)
+
+		this.weatherIconEl = document.createElement('img')
+		this.weatherIconEl.style.width = "30px"
+		this.weatherIconEl.style.height = "30px"
+		this.weatherIconEl.style.margin = "0 16px"
+		this.secondRowEl.appendChild(this.weatherIconEl)
+
+		this.weatherEl = document.createElement('span')
+		this.secondRowEl.appendChild(this.weatherEl)
 
 		this.timeUpdateTimer = setInterval(() => this.update(), 500)
+		this.weatherUpdateTimer = setInterval(() => this.fetchWeather(), 900000)
+		this.fetchWeather()
+	}
+
+	fetchWeather() {
+		const city = encodeURIComponent("Bratislava")
+		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=422958391a36158a7baf2910a96df05c`)
+			.then(res => res.json())
+			.then(res => {
+				let icon = '', weatherId = res.weather[0].id
+				if (weatherId === 800) icon = '/res/weather-icons/021-sun.svg'
+				else if (weatherId >= 200 && weatherId < 300) icon = '/res/weather-icons/021-storm.svg'
+				else if (weatherId >= 300 && weatherId < 600) icon = '/res/weather-icons/021-rain-2.svg'
+				else if (weatherId >= 600 && weatherId < 700) icon = '/res/weather-icons/021-snowing-1.svg'
+				else if (weatherId > 800 && weatherId < 810) icon = '/res/weather-icons/021-cloudy-1.svg'
+
+				this.weatherIconEl.src = icon
+				this.weatherEl.innerHTML = `${Math.round(res.main.temp)} °C`
+			})
+			.catch(e => console.log(e))
 	}
 
 	render(container) {
@@ -84,6 +116,7 @@ class ClockWidget extends WidgetBase {
 	}
 	unload() {
 		clearInterval(this.timeUpdateTimer)
+		clearInterval(this.weatherUpdateTimer)
 	}
 }
 
@@ -110,7 +143,12 @@ class LinkWidget extends WidgetBase {
 		gridContainer.appendChild(this.iconEl)
 
 		this.labelEl = document.createElement('span')
-		this.labelEl.style.display = "block"
+		this.labelEl.style.overflow = "hidden"
+		this.labelEl.style.textOverflow = "ellipsis"
+		this.labelEl.style.textAlign = "center"
+		this.labelEl.style.display = "-webkit-box"
+		this.labelEl.style.webkitLineClamp = "1"
+		this.labelEl.style.webkitBoxOrient = "vertical"
 		this.labelEl.innerText = extra.label || extra.rel
 		gridContainer.appendChild(this.labelEl)
 	}
@@ -118,19 +156,17 @@ class LinkWidget extends WidgetBase {
 	render(container) { }
 }
 
-class TabContext {
-	constructor() {
+class MyCustomWidget extends WidgetBase {
+	constructor(gridContainer, extra) {
+		super(gridContainer, extra)
 		this.deviceState = {
 			connection: null,
 			batteryHealth: null
 		}
 		this.devices = []
-		this.widgets = []
-		this.updateBackground()
-		this.loadSensorsData().then(() => this.updateSensorWidgets())
-		this.loadDevicesHistory().then(() => this.updateDevicesHistoryWidget())
+		this.loadSensorsData().then(() => this.update())
+		this.loadDevicesHistory().then(() => this.update())
 	}
-
 	async loadSensorsData() {
 		const battery = await navigator.getBattery()
 		const connection = navigator.onLine ? '~' + navigator.connection.downlink + ' Mbps ' : 'Offline '
@@ -139,8 +175,7 @@ class TabContext {
 		this.deviceState.connection = connection;
 		this.deviceState.batteryHealth = batteryHealth;
 	}
-
-	loadDevicesHistory() {
+	async loadDevicesHistory() {
 		return new Promise((resolve) => {
 			// noinspection JSUnresolvedVariable
 			chrome.sessions.getDevices((res) => {
@@ -148,6 +183,44 @@ class TabContext {
 				resolve()
 			})
 		})
+	}
+
+	render(container) {
+		document.getElementById('battery').innerHTML = `${this.deviceState.connection} - ${this.deviceState.batteryHealth}`
+		const devices = this.devices
+		let format = "<span style='font-size: 2vh;padding: 8px;;text-shadow: 0 0 2px gray;'><strong style='font-size: 2vh;text-shadow: 0 0 2px gray;'>DEVICE</strong> > LINK<span>";
+		for (let i = 0; i < devices.length; i++) {
+			let lastSession = devices[i].sessions;
+			if (lastSession.length > 0) {
+
+				lastSession = lastSession[0];
+				let orgLink = lastSession.window['tabs'][0]['url'];
+				let sessionLink = orgLink.substring(0, 20);
+
+				sessionLink = `<a href="${orgLink}" target='_blank' rel='noopenner' style='color:white;text-decoration: none;'>${sessionLink}</a>`;
+
+				let domContent = format.replace("DEVICE", devices[i].deviceName);
+				domContent = domContent.replace("LINK", sessionLink);
+				document.getElementById('device').innerHTML += domContent;
+			}
+		}
+	}
+}
+
+class TabContext {
+	constructor() {
+		this.gridSizeInfo = {
+			width: -1, height: -1,
+			columns: -1, rows: -1
+		}
+		this.widgets = []
+		this.updateBackground()
+		this.updateDebugWidget()
+		window.onresize = () => this.updateDebugWidget();
+	}
+
+	async updateDebugWidget() {
+		/*const colCount = window.getComputedStyle(gridEl).gridTemplateColumns.split(" ").length;*/
 	}
 
 	async updateBackground() {
@@ -172,30 +245,6 @@ class TabContext {
 			.catch(error)
 	}
 
-	async updateSensorWidgets() {
-		document.getElementById('battery').innerHTML = `${this.deviceState.connection} - ${this.deviceState.batteryHealth}`
-	}
-
-	async updateDevicesHistoryWidget() {
-		const devices = this.devices
-		let format = "<span style='font-size: 2vh;padding: 8px;;text-shadow: 0 0 2px gray;'><strong style='font-size: 2vh;text-shadow: 0 0 2px gray;'>DEVICE</strong> > LINK<span>";
-		for (let i = 0; i < devices.length; i++) {
-			let lastSession = devices[i].sessions;
-			if (lastSession.length > 0) {
-
-				lastSession = lastSession[0];
-				let orgLink = lastSession.window['tabs'][0]['url'];
-				let sessionLink = orgLink.substring(0, 20);
-
-				sessionLink = `<a href="${orgLink}" target='_blank' rel='noopenner' style='color:white;text-decoration: none;'>${sessionLink}</a>`;
-
-				let domContent = format.replace("DEVICE", devices[i].deviceName);
-				domContent = domContent.replace("LINK", sessionLink);
-				document.getElementById('device').innerHTML += domContent;
-			}
-		}
-	}
-
 	/**
 	 * Creates a new widget and attaches it to the grid
 	 * @param constructor reference to widget class
@@ -210,7 +259,7 @@ class TabContext {
 	 */
 	createWidget(constructor, extra, pX, pY, w, h, w1 = 0, h1 = 0) {
 		const container = document.createElement("div")
-		container.style.gridArea = `${pY+1} / ${pX+1} / ${h ? ('span ' + h) : h1} / ${w ? ('span ' + w) : w1}`
+		container.style.gridArea = `${pY >= 0 ? (pY+1) : pY} / ${pX >= 0 ? (pX+1) : pX} / ${h ? ('span ' + h) : h1} / ${w ? ('span ' + w) : w1}`
 		document.getElementById('ref-lay-grid').appendChild(container)
 		try {
 			const widget = new constructor(container, extra || {})
@@ -226,6 +275,9 @@ class TabContext {
 		}
 	}
 
+	/**
+	 * Unloads all widgets
+	 */
 	unload() {
 		for (let i = 0; i < this.widgets.length; i++) {
 			this.widgets[i].unload()
@@ -234,18 +286,14 @@ class TabContext {
 }
 
 window.tabContext = new TabContext()
-window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
-
-window.tabContext.createWidget(LinkWidget, {rel: "https://stackoverflow.com", label: "StackOverflow"},
-	0, 4, 1, 1)
-window.tabContext.createWidget(LinkWidget, {rel: "https://youtube.com", label: "Youtube"},
-	0, 5, 1, 1)
-window.tabContext.createWidget(LinkWidget, {rel: "https://instagram.com", label: "Instagram"},
-	1, 4, 1, 1)
-window.tabContext.createWidget(LinkWidget, {rel: "https://facebook.com", label: "Facebook"},
-	1, 5, 1, 1)
-window.tabContext.createWidget(LinkWidget, {rel: "https://github.com", label: "Github", color: "#303030"},
-	5, 5, 1, 1)
+window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 2, -1)
+chrome.topSites.get(res => {
+	for (let i = 0; i < res.length && i < 12; i++) {
+		window.tabContext.createWidget(LinkWidget,
+			{rel: res[i].url, label: res[i].title},
+			Math.floor(i % 4), 3 + Math.floor(i / 4), 1, 1)
+	}
+})
 
 /*const timeTo12HrFormat = (time) => {
 	let time_part_array = time.split(":");
