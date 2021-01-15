@@ -49,6 +49,8 @@ class WidgetBase {
 	unload() {}
 }
 
+let city
+
 class ClockWidget extends WidgetBase {
 	constructor(context, gridContainer, extra) {
 		super(context, gridContainer, extra);
@@ -79,6 +81,8 @@ class ClockWidget extends WidgetBase {
 		this.secondRowEl.appendChild(this.dateEl)
 
 		this.weatherIconEl = document.createElement('img')
+		this.weatherIconEl.id = "weather-icon"
+		this.weatherIconEl.href = `https://openweathermap.org/city/${city}`;
 		this.weatherIconEl.style.width = "30px"
 		this.weatherIconEl.style.height = "30px"
 		this.weatherIconEl.style.margin = "0 16px"
@@ -92,9 +96,10 @@ class ClockWidget extends WidgetBase {
 		this.fetchWeather()
 	}
 
+
 	async fetchWeather() {
 		// change unit to selected by user in dialog or if location = us (default )
-		let city, unit = "metric"
+		let unit = "metric"
 		try {
 			const ipApiRes = await fetch(`http://ip-api.com/json/?fields=city`)
 			const ipApiJson = await ipApiRes.json()
@@ -223,6 +228,7 @@ class MyCustomWidget extends WidgetBase {
 	}
 }
 
+
 class TabContext {
 	constructor() {
 		this.gridSizeInfo = {
@@ -291,7 +297,7 @@ class TabContext {
 		const error = () => {
 			const bgnum = (Math.floor(Math.random() * 6) + 1)
 			console.log(bgnum)
-			dom.style.backgroundImage =  `url(bg/${bgnum}.jpg)`
+			dom.style.backgroundImage =  `url(res/bg/${bgnum}.jpg)`
 		}
 
 		fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,arquitecture,city')
