@@ -93,8 +93,15 @@ class ClockWidget extends WidgetBase {
 	}
 
 	fetchWeather() {
+
+		fetch(`http://ip-api.com/json/?fields=city`)
+			.then(res => res.json())
+			.then(res => {console.log(res.city)})
+	}
+		// change unit to selected by user in dialog or if location = us (default )
+		const unit = "metric"
 		const city = encodeURIComponent("Bratislava")
-		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=422958391a36158a7baf2910a96df05c`)
+		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
 			.then(res => res.json())
 			.then(res => {
 				let icon = '', weatherId = res.weather[0].id
