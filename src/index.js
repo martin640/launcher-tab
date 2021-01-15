@@ -17,10 +17,11 @@ const getDateDetails = () => {
 }
 
 class WidgetBase {
-	constructor(gridContainer, extra) {
+	constructor(context, gridContainer, extra) {
 		this.update.bind(this)
 		this.render.bind(this)
 		this.unload.bind(this)
+		this._context = context
 		this._container = gridContainer
 		this._extra = extra
 	}
@@ -30,7 +31,13 @@ class WidgetBase {
 	get extra() {
 		return this._extra
 	}
+	_changeLayout(config) {
+		const {pX, pY, w, h, w1 = 0, h1 = 0} = config
+		this._container.style.gridArea =
+			`${pY >= 0 ? (pY+1) : pY} / ${pX >= 0 ? (pX+1) : pX} / ${h ? ('span ' + h) : h1} / ${w ? ('span ' + w) : w1}`
+	}
 	update() {
+		this._context._notifyRender()
 		this.render(this._container)
 	}
 	render(container) {
@@ -43,8 +50,8 @@ class WidgetBase {
 }
 
 class ClockWidget extends WidgetBase {
-	constructor(gridContainer, extra) {
-		super(gridContainer, extra);
+	constructor(context, gridContainer, extra) {
+		super(context, gridContainer, extra);
 		this.checkTime = (i) => ((i < 10) ? "0" + i : i)
 
 		gridContainer.style.display = "flex"
@@ -121,8 +128,8 @@ class ClockWidget extends WidgetBase {
 }
 
 class LinkWidget extends WidgetBase {
-	constructor(gridContainer, extra) {
-		super(gridContainer, extra)
+	constructor(context, gridContainer, extra) {
+		super(context, gridContainer, extra)
 
 		gridContainer.style.display = "flex"
 		gridContainer.style.flexDirection = "column"
@@ -157,8 +164,8 @@ class LinkWidget extends WidgetBase {
 }
 
 class MyCustomWidget extends WidgetBase {
-	constructor(gridContainer, extra) {
-		super(gridContainer, extra)
+	constructor(context, gridContainer, extra) {
+		super(context, gridContainer, extra)
 		this.deviceState = {
 			connection: null,
 			batteryHealth: null
@@ -214,23 +221,24 @@ class TabContext {
 			columns: -1, rows: -1
 		}
 		this.widgets = []
+		this.renderStats = {
+			counter: 0, counterSnapshot: 0, v: 0,
+			start: Date.now()
+		}
 		this.updateBackground()
-		window.onresize = () => this.updateDebugWidget()
-		setTimeout(() => this.updateDebugWidget(), 1000)
+		this.onLayoutChange = () => {}
+		window.onresize = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
+		setTimeout(() => this.probeLayoutInfo(), 1000)
+		setInterval(() => {
+			this.renderStats.v = (this.renderStats.counter - this.renderStats.counterSnapshot)
+			this.renderStats.counterSnapshot = this.renderStats.counter
+			this.updateDebugWidget()
+		}, 1000)
 	}
 
-	async updateDebugWidget() {
-		const element = document.getElementById('ref-lay-grid')
-		const computedStyle = window.getComputedStyle(element)
-		this.gridSizeInfo.width = element.clientWidth
-		this.gridSizeInfo.height = element.clientHeight
-		this.gridSizeInfo.columns = computedStyle.gridTemplateColumns.split(" ").length
-		this.gridSizeInfo.rows = computedStyle.gridTemplateRows.split(" ").length
-		let data = "debugging enabled"
-		data += `, layout size: [${this.gridSizeInfo.width} × ${this.gridSizeInfo.height}] (${this.gridSizeInfo.columns} × ${this.gridSizeInfo.rows})`
-		data += `, widgets attached: ${this.widgets.length}`
-
-		document.getElementById('status-debug').innerHTML = data
+	async _notifyRender() {
+		this.renderStats.counter++
+		this.updateDebugWidget()
 	}
 
 	async updateBackground() {
@@ -255,6 +263,27 @@ class TabContext {
 			.catch(error)
 	}
 
+	async probeLayoutInfo() {
+		const element = document.getElementById('ref-lay-grid')
+		const computedStyle = window.getComputedStyle(element)
+		const old = {...this.gridSizeInfo}
+		this.gridSizeInfo.width = element.clientWidth
+		this.gridSizeInfo.height = element.clientHeight
+		this.gridSizeInfo.columns = computedStyle.gridTemplateColumns.split(" ").length
+		this.gridSizeInfo.rows = computedStyle.gridTemplateRows.split(" ").length
+
+		this.onLayoutChange(old, {...this.gridSizeInfo})
+	}
+
+	updateDebugWidget() {
+		let data = "debugging enabled"
+		data += `, layout size: [${this.gridSizeInfo.width} × ${this.gridSizeInfo.height}] (${this.gridSizeInfo.columns} × ${this.gridSizeInfo.rows})`
+		data += `, widgets attached: ${this.widgets.length}`
+		data += `, updates: ${this.renderStats.v}/s`
+
+		document.getElementById('status-debug').innerHTML = data
+	}
+
 	/**
 	 * Creates a new widget and attaches it to the grid
 	 * @param constructor reference to widget class
@@ -269,12 +298,12 @@ class TabContext {
 	 */
 	createWidget(constructor, extra, pX, pY, w, h, w1 = 0, h1 = 0) {
 		const container = document.createElement("div")
-		container.style.gridArea = `${pY >= 0 ? (pY+1) : pY} / ${pX >= 0 ? (pX+1) : pX} / ${h ? ('span ' + h) : h1} / ${w ? ('span ' + w) : w1}`
 		document.getElementById('ref-lay-grid').appendChild(container)
 		try {
-			const widget = new constructor(container, extra || {})
+			const widget = new constructor(this, container, extra || {})
 			if (widget) {
 				this.widgets.push(widget)
+				widget._changeLayout({pX, pY, w, h, w1, h1})
 				widget.update()
 				this.updateDebugWidget()
 				return widget
@@ -297,27 +326,30 @@ class TabContext {
 }
 
 window.tabContext = new TabContext()
-window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
-setTimeout(() => {
+window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1);
+
+// initialize widgets for top sites
+(() => {
+	const topSitesWidgets = []
+	// load top sites widgets at first with no layout parameters
 	chrome.topSites.get(res => {
-		const availableHeight = window.tabContext.gridSizeInfo.rows - 3
 		for (let i = 0; i < res.length; i++) {
-			window.tabContext.createWidget(LinkWidget,
-				{rel: res[i].url, label: res[i].title},
-				Math.floor(i / availableHeight), 3 + Math.floor(i % availableHeight), 1, 1)
+			topSitesWidgets.push(
+				window.tabContext.createWidget(LinkWidget,
+					{rel: res[i].url, label: res[i].title},
+					0, 0, 0, 0)
+			)
 		}
 	})
-}, 1000)
-
-/*const timeTo12HrFormat = (time) => {
-	let time_part_array = time.split(":");
-	let ampm = 'AM';
-	if (time_part_array[0] >= 12) {
-		ampm = 'PM';
+	// update layout parameters on layout change
+	window.tabContext.onLayoutChange = (oldState, newState) => {
+		const availableHeight = newState.rows - 3
+		for (let i = 0; i < topSitesWidgets.length; i++) {
+			topSitesWidgets[i]._changeLayout({
+				pX: Math.floor(i / availableHeight),
+				pY: 3 + Math.floor(i % availableHeight),
+				w: 1, h: 1
+			})
+		}
 	}
-	if (time_part_array[0] > 12) {
-		time_part_array[0] = time_part_array[0] - 12;
-	}
-	let formatted_time = `${time_part_array[0]}:${time_part_array[1]} <span class="am_pm">${ampm}<span>`;
-	return formatted_time;
-}*/
+})()
