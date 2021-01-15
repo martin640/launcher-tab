@@ -49,8 +49,6 @@ class WidgetBase {
 	unload() {}
 }
 
-let city
-
 class ClockWidget extends WidgetBase {
 	constructor(context, gridContainer, extra) {
 		super(context, gridContainer, extra);
@@ -82,13 +80,12 @@ class ClockWidget extends WidgetBase {
 
 		this.weatherIconEl = document.createElement('img')
 		this.weatherIconEl.id = "weather-icon"
-		this.weatherIconEl.href = `https://openweathermap.org/city/${city}`;
 		this.weatherIconEl.style.width = "30px"
 		this.weatherIconEl.style.height = "30px"
 		this.weatherIconEl.style.margin = "0 16px"
 		this.secondRowEl.appendChild(this.weatherIconEl)
 
-		this.weatherEl = document.createElement('span')
+		this.weatherEl = document.createElement('a')
 		this.secondRowEl.appendChild(this.weatherEl)
 
 		this.timeUpdateTimer = setInterval(() => this.update(), 1000)
@@ -96,10 +93,9 @@ class ClockWidget extends WidgetBase {
 		this.fetchWeather()
 	}
 
-
 	async fetchWeather() {
 		// change unit to selected by user in dialog or if location = us (default )
-		let unit = "metric"
+		let city, unit = "metric"
 		try {
 			const ipApiRes = await fetch(`http://ip-api.com/json/?fields=city`)
 			const ipApiJson = await ipApiRes.json()
@@ -107,6 +103,7 @@ class ClockWidget extends WidgetBase {
 		} catch (e) {
 			return console.warn("Geolocation failed")
 		}
+		this.weatherEl.href = `https://openweathermap.org/city/${city}`
 
 		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
 			.then(res => res.json())
@@ -297,7 +294,7 @@ class TabContext {
 		const error = () => {
 			const bgnum = (Math.floor(Math.random() * 6) + 1)
 			console.log(bgnum)
-			dom.style.backgroundImage =  `url(res/bg/${bgnum}.jpg)`
+			dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
 		}
 
 		fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,arquitecture,city')
