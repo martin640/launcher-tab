@@ -298,13 +298,16 @@ class TabContext {
 
 window.tabContext = new TabContext()
 window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
-chrome.topSites.get(res => {
-	for (let i = 0; i < res.length && i < 12; i++) {
-		window.tabContext.createWidget(LinkWidget,
-			{rel: res[i].url, label: res[i].title},
-			Math.floor(i % 4), 3 + Math.floor(i / 4), 1, 1)
-	}
-})
+setTimeout(() => {
+	chrome.topSites.get(res => {
+		const availableHeight = window.tabContext.gridSizeInfo.rows - 3
+		for (let i = 0; i < res.length; i++) {
+			window.tabContext.createWidget(LinkWidget,
+				{rel: res[i].url, label: res[i].title},
+				Math.floor(i / availableHeight), 3 + Math.floor(i % availableHeight), 1, 1)
+		}
+	})
+}, 1000)
 
 /*const timeTo12HrFormat = (time) => {
 	let time_part_array = time.split(":");
