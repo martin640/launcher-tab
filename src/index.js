@@ -104,6 +104,8 @@ class ClockWidget extends WidgetBase {
 			return console.warn("Geolocation failed")
 		}
 		this.weatherEl.href = `https://openweathermap.org/city/${city}`
+		this.weatherEl.style.color = "white";
+		this.weatherEl.style.textDecoration = "none";
 
 		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
 			.then(res => res.json())
@@ -128,15 +130,23 @@ class ClockWidget extends WidgetBase {
 			s = this.checkTime(today.getSeconds())
 		//time = timeTo12HrFormat(time);
 		this.timeEl.innerHTML = `${h}:${m}`
+		this.timeEl.id = "clock";
 
 		const d = getDateDetails()
 		this.dateEl.innerHTML = `${d.day}, ${d.month} ${d.date}`
+
+
+		
+
+		
+		
 	}
 	unload() {
 		clearInterval(this.timeUpdateTimer)
 		clearInterval(this.weatherUpdateTimer)
 	}
 }
+
 
 class LinkWidget extends WidgetBase {
 	constructor(context, gridContainer, extra) {
@@ -173,6 +183,8 @@ class LinkWidget extends WidgetBase {
 
 	render(container) { }
 }
+
+
 
 class MyCustomWidget extends WidgetBase {
 	constructor(context, gridContainer, extra) {
