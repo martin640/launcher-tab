@@ -91,6 +91,12 @@ class ClockWidget extends WidgetBase {
 		this.timeUpdateTimer = setInterval(() => this.update(), 1000)
 		this.weatherUpdateTimer = setInterval(() => this.fetchWeather(), 900000)
 		this.fetchWeather()
+
+		this.timeEl.onmouseover = ()=>{
+			this.timeEl.innerText = "dateSeconds";
+			//aaa heres the problem
+			//thats a string just to test
+		}
 	}
 
 	async fetchWeather() {
@@ -165,7 +171,7 @@ class LinkWidget extends WidgetBase {
 		this.iconEl.style.height = "24px"
 		this.iconEl.style.backgroundColor = extra.color || "#e9e9e9"
 		this.iconEl.style.padding = "12px"
-		this.iconEl.style.borderRadius = "50%"
+		this.iconEl.style.borderRadius = "25%"
 		this.iconEl.style.marginBottom = "8px"
 		this.iconEl.src = `chrome://favicon/${extra.rel}`
 		gridContainer.appendChild(this.iconEl)
