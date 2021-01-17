@@ -122,7 +122,8 @@ class ClockWidget extends WidgetBase {
 		} catch (e) {
 			return console.warn("Geolocation failed")
 		}
-		this.weatherEl.href = `https://openweathermap.org/city/${city}`
+		this.weatherEl.href = `https://openweathermap.org/city/${encodeURIComponent(city)}`
+		this.weatherEl.title = city
 
 		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
 			.then(res => res.json())
