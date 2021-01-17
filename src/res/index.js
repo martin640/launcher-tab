@@ -334,31 +334,27 @@ class TabContext {
 		} else if ((a = storage.getItem("bgNum"))) {
 			return dom.style.backgroundImage = `url(res/bg/${a}.jpg)`
 		} else {
-			const error = () => {
+			const error = (e) => {
 				const bgnum = (Math.floor(Math.random() * 6) + 1)
-				console.log("using built-in wallpapers" + bgnum)
+				console.log(`Error: ${e}, using built-in wallpapers num ${bgnum}`)
 				dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
 			}
 
-			/* fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,arquitecture,city')
-				.then(imagelists => {
-					const selectedImage = imagelists.url
-					console.log(selectedImage)
-					if (selectedImage.startsWith("https://images.unsplash.com/source-404")) {
+			fetch('https://picsum.photos/1900/1000')
+				.then(res => {
+					const selectedImage = res.url
+					if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
 						return error()
 					}
 					dom.style.backgroundImage = `url(${selectedImage})`
-				})*/
 
-			fetch('https://picsum.photos/1600/1900')
-				.then(imagelists => {
-					const selectedImage = imagelists.url
-					console.log(selectedImage)
-					if (selectedImage.contains("404" || "error")) {
-						return error()
-					}
-					dom.style.backgroundImage = `url(${selectedImage})`
-					attribute.innerHTML = `<a>Photo by <a class="ul">${name} on Unsplash`
+					const imgId = /id\/(.+?)\//g.exec(selectedImage)[1]
+					fetch(`https://picsum.photos/id/${imgId}/info`)
+						.then(res => res.json())
+						.then(res => {
+							attribute.innerHTML = `Photo by <a href="${res.url}">${res.author}</a> on Unsplash`
+						})
+						.catch(console.log)
 				})
 				.catch(error)
 		}

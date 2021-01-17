@@ -42,7 +42,7 @@ body, html {
     color: #ffffff; text-shadow: 0 0 8px black;
 }
 #status-info a {
-    text-decoration: underline;
+    color: inherit;
 }
 #status-debug {
     position: absolute; padding: 16px;
