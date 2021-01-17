@@ -12,6 +12,7 @@ body, html {
     height: 100%;
     position: relative;
     color: white;
+    overflow: hidden;
     font-family: 'Inter-Regular', sans-serif;
 }
 
@@ -53,11 +54,14 @@ body, html {
 }
 
 #options-menu {
-    display: none;
     position: absolute; width: 350px; background-color: #212121;
-    top: 0; right: 0; bottom: 0; padding: 16px;
-    overflow: auto;
+    top: 0; right: -400px; bottom: 0; padding: 16px;
+    overflow: auto; opacity: 0;
     box-shadow: -3px 0 16px 12px rgba(0,0,0,0.2);
+    transition: right 250ms ease-in-out, opacity 250ms ease-in-out;
+}
+#options-menu.shown {
+    right: 0; opacity: 1;
 }
 #options-menu .header {
     display: flex; justify-content: space-between; align-items: center;

@@ -478,9 +478,9 @@ if (autoShortcuts) {
 // configure preferences menu
 (() => {
 	document.getElementById('options-menu-toggle1').onclick =
-		() => document.getElementById('options-menu').style.display = "block"
+		() => document.getElementById('options-menu').classList.add('shown')
 	document.getElementById('options-menu-toggle2').onclick =
-		() => document.getElementById('options-menu').style.display = "none"
+		() => document.getElementById('options-menu').classList.remove('shown')
 	document.getElementById('options-menu-reload').onclick = () => window.tabContext.rebuildLayout()
 
 	document.getElementById('options-menu-i1').checked = autoShortcuts
