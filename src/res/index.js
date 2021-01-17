@@ -325,6 +325,7 @@ class TabContext {
 
 	updateBackground() {
 		const dom = document.getElementById("bgimg")
+		const attribute = document.getElementById("status-info")
 		const storage = window.localStorage
 		let a
 
@@ -335,11 +336,11 @@ class TabContext {
 		} else {
 			const error = () => {
 				const bgnum = (Math.floor(Math.random() * 6) + 1)
-				console.log(bgnum)
+				console.log("using built-in wallpapers" + bgnum)
 				dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
 			}
 
-			fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,arquitecture,city')
+			/* fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,arquitecture,city')
 				.then(imagelists => {
 					const selectedImage = imagelists.url
 					console.log(selectedImage)
@@ -347,6 +348,17 @@ class TabContext {
 						return error()
 					}
 					dom.style.backgroundImage = `url(${selectedImage})`
+				})*/
+
+			fetch('https://picsum.photos/1600/1900')
+				.then(imagelists => {
+					const selectedImage = imagelists.url
+					console.log(selectedImage)
+					if (selectedImage.contains("404" || "error")) {
+						return error()
+					}
+					dom.style.backgroundImage = `url(${selectedImage})`
+					attribute.innerHTML = `<a>Photo by <a class="ul">${name} on Unsplash`
 				})
 				.catch(error)
 		}
