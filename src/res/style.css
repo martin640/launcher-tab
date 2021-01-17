@@ -33,7 +33,7 @@ body, html {
     color: #ffffff; text-shadow: 0 0 8px black;
 }
 #status-options img {
-    max-height: 20px; max-width: 20px; margin: 16px;
+    max-height: 16px; max-width: 16px; margin: 16px;
 }
 #status-info {
     position: absolute; padding: 8px;
