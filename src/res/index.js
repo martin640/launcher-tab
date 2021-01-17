@@ -85,7 +85,7 @@ class ClockWidget extends WidgetBase {
 		this.secondRowEl.appendChild(this.weatherEl)
 
 		this.weatherIconEl = document.createElement('img')
-		this.weatherIconEl.id = "weather-icon"
+		this.weatherIconEl.src = '/res/weather-icons/unknown.png'
 		this.weatherIconEl.style.width = "30px"
 		this.weatherIconEl.style.height = "30px"
 		this.weatherIconEl.style.margin = "0 16px"
@@ -128,7 +128,7 @@ class ClockWidget extends WidgetBase {
 		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
 			.then(res => res.json())
 			.then(res => {
-				let { icon, weatherId } = fetchWeatherIcon(res);
+				let icon = '', weatherId = res.weather[0].id
 				if (weatherId === 800) icon = '/res/weather-icons/021-sun.svg'
 				else if (weatherId >= 200 && weatherId < 300) icon = '/res/weather-icons/021-storm.svg'
 				else if (weatherId >= 300 && weatherId < 600) icon = '/res/weather-icons/021-rain-2.svg'
@@ -463,7 +463,7 @@ if (autoShortcuts) {
 		})
 		// update layout parameters on layout change
 		window.tabContext.onLayoutChange = (oldState, newState) => {
-			const availableHeight = newState.rows - 5
+			const availableHeight = newState.rows - 3
 			for (let i = 0; i < topSitesWidgets.length; i++) {
 				topSitesWidgets[i]._changeLayout({
 					pX: Math.floor(i / availableHeight),
@@ -502,9 +502,3 @@ if (autoShortcuts) {
 		window.tabContext.updateAllWidgets()
 	}
 })()
-
-function fetchWeatherIcon(res) {
-	let icon = '', weatherId = res.weather[0].id;
-	icon = '/res/unknown.png'
-	return { icon, weatherId };
-}
