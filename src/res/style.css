@@ -29,16 +29,15 @@ body, html {
 }
 #status-options {
     position: absolute; right: 0; top: 0;
-    margin-right: 20px;
     color: #ffffff; text-shadow: 0 0 8px black;
 }
-#status-options a { display: inline-block; }
+#status-options a { display: inline-block; transition: background-color 150ms ease-in-out; }
+#status-options a:hover { display: inline-block; background-color: #ffffff33 }
 #status-options img {
-    max-height: 20px; max-width: 20px; margin: 20px 10px 20px 20px;
+    max-height: 20px; max-width: 20px; margin: 16px;
 }
 #status-info {
     position: absolute; padding: 16px;
-    line-height: 16pt;
     left: 0; bottom: 0;
     color: #ffffff; text-shadow: 0 0 8px black;
 }
@@ -46,7 +45,7 @@ body, html {
     text-decoration: underline;
 }
 #status-debug {
-    position: absolute; padding: 12px;
+    position: absolute; padding: 16px;
     right: 0; bottom: 0;
     color: aquamarine; text-shadow: 0 0 8px black;
 }
