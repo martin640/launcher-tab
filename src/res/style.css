@@ -58,7 +58,7 @@ body, html {
     top: 0; right: -400px; bottom: 0; padding: 16px;
     overflow: auto; opacity: 0;
     box-shadow: -3px 0 16px 12px rgba(0,0,0,0.2);
-    transition: right 250ms ease-in-out, opacity 250ms ease-in-out;
+    transition: right 200ms ease-in-out, opacity 200ms ease-in-out;
 }
 #options-menu.shown {
     right: 0; opacity: 1;
