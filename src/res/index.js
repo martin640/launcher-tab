@@ -1,4 +1,5 @@
 const store = chrome.storage.sync
+const storage = window.localStorage
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 const getDateDetails = () => {
@@ -78,24 +79,36 @@ class ClockWidget extends WidgetBase {
 		this.dateEl = document.createElement('span')
 		this.secondRowEl.appendChild(this.dateEl)
 
+		this.weatherEl = document.createElement('a')
+		this.weatherEl.style.color = "white"
+		this.weatherEl.style.textDecoration = "none"
+		this.secondRowEl.appendChild(this.weatherEl)
+
 		this.weatherIconEl = document.createElement('img')
 		this.weatherIconEl.id = "weather-icon"
 		this.weatherIconEl.style.width = "30px"
 		this.weatherIconEl.style.height = "30px"
 		this.weatherIconEl.style.margin = "0 16px"
-		this.secondRowEl.appendChild(this.weatherIconEl)
+		this.weatherEl.appendChild(this.weatherIconEl)
 
-		this.weatherEl = document.createElement('a')
-		this.secondRowEl.appendChild(this.weatherEl)
+		this.weatherTempEl = document.createElement('span')
+		this.weatherEl.appendChild(this.weatherTempEl)
 
 		this.timeUpdateTimer = setInterval(() => this.update(), 1000)
 		this.weatherUpdateTimer = setInterval(() => this.fetchWeather(), 900000)
 		this.fetchWeather()
 
-		this.timeEl.onmouseover = ()=>{
-			this.timeEl.innerText = "dateSeconds";
-			//aaa heres the problem
-			//thats a string just to test
+		this.timeEl.onmouseenter = () => {
+			this.timeHovered = true
+			clearInterval(this.timeUpdateTimer)
+			this.timeUpdateTimer = setInterval(() => this.update(), 200)
+			this.update()
+		}
+		this.timeEl.onmouseleave = () => {
+			this.timeHovered = false
+			clearInterval(this.timeUpdateTimer)
+			this.timeUpdateTimer = setInterval(() => this.update(), 1000)
+			this.update()
 		}
 	}
 
@@ -110,8 +123,6 @@ class ClockWidget extends WidgetBase {
 			return console.warn("Geolocation failed")
 		}
 		this.weatherEl.href = `https://openweathermap.org/city/${city}`
-		this.weatherEl.style.color = "white";
-		this.weatherEl.style.textDecoration = "none";
 
 		fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
 			.then(res => res.json())
@@ -124,7 +135,7 @@ class ClockWidget extends WidgetBase {
 				else if (weatherId > 800 && weatherId < 810) icon = '/res/weather-icons/021-cloudy-1.svg'
 
 				this.weatherIconEl.src = icon
-				this.weatherEl.innerHTML = `${Math.round(res.main.temp)} °C`
+				this.weatherTempEl.innerHTML = `${Math.round(res.main.temp)} °C`
 			})
 			.catch(e => console.log(e))
 	}
@@ -135,17 +146,15 @@ class ClockWidget extends WidgetBase {
 			m = this.checkTime(today.getMinutes()),
 			s = this.checkTime(today.getSeconds())
 		//time = timeTo12HrFormat(time);
-		this.timeEl.innerHTML = `${h}:${m}`
+		if (this.timeHovered) {
+			this.timeEl.innerHTML = `${h}:${m}:${s}`
+		} else {
+			this.timeEl.innerHTML = `${h}:${m}`
+		}
 		this.timeEl.id = "clock";
 
 		const d = getDateDetails()
 		this.dateEl.innerHTML = `${d.day}, ${d.month} ${d.date}`
-
-
-		
-
-		
-		
 	}
 	unload() {
 		clearInterval(this.timeUpdateTimer)
@@ -153,30 +162,44 @@ class ClockWidget extends WidgetBase {
 	}
 }
 
-
 class LinkWidget extends WidgetBase {
 	constructor(context, gridContainer, extra) {
 		super(context, gridContainer, extra)
 
-		gridContainer.style.display = "flex"
-		gridContainer.style.flexDirection = "column"
-		gridContainer.style.alignItems = "center"
-		gridContainer.style.justifyContent = "center"
-		gridContainer.style.cursor = "pointer"
-		gridContainer.onclick = () => document.location.href = extra.rel
+		this.innerView = document.createElement('a')
+		gridContainer.appendChild(this.innerView)
 
 		this.iconEl = document.createElement('img')
+		this.innerView.appendChild(this.iconEl)
+
+		this.labelEl = document.createElement('span')
+		this.innerView.appendChild(this.labelEl)
+	}
+
+	render(container) {
+		const extra = this.extra
+
+		this.innerView.style.display = "flex"
+		this.innerView.style.width = "100%"
+		this.innerView.style.height = "100%"
+		this.innerView.style.flexDirection = "column"
+		this.innerView.style.alignItems = "center"
+		this.innerView.style.justifyContent = "center"
+		this.innerView.style.cursor = "pointer"
+		this.innerView.style.color = "white"
+		this.innerView.style.textDecoration = "none"
+		this.innerView.href = extra.rel
+
 		this.iconEl.style.display = "block"
 		this.iconEl.style.width = "24px"
 		this.iconEl.style.height = "24px"
 		this.iconEl.style.backgroundColor = extra.color || "#e9e9e9"
 		this.iconEl.style.padding = "12px"
-		this.iconEl.style.borderRadius = "25%"
+		this.iconEl.style.borderRadius =
+			storage.getItem('shortcut-circle') === 'true' ? "50%" : "25%"
 		this.iconEl.style.marginBottom = "8px"
 		this.iconEl.src = `chrome://favicon/${extra.rel}`
-		gridContainer.appendChild(this.iconEl)
 
-		this.labelEl = document.createElement('span')
 		this.labelEl.style.overflow = "hidden"
 		this.labelEl.style.textOverflow = "ellipsis"
 		this.labelEl.style.textAlign = "center"
@@ -184,13 +207,8 @@ class LinkWidget extends WidgetBase {
 		this.labelEl.style.webkitLineClamp = "1"
 		this.labelEl.style.webkitBoxOrient = "vertical"
 		this.labelEl.innerText = extra.label || extra.rel
-		gridContainer.appendChild(this.labelEl)
 	}
-
-	render(container) { }
 }
-
-
 
 class MyCustomWidget extends WidgetBase {
 	constructor(context, gridContainer, extra) {
@@ -243,7 +261,6 @@ class MyCustomWidget extends WidgetBase {
 	}
 }
 
-
 class TabContext {
 	constructor() {
 		this.gridSizeInfo = {
@@ -252,19 +269,19 @@ class TabContext {
 		}
 		this.widgets = []
 		this.renderStats = {
-			counter: 0, counterSnapshot: 0, v: 0,
+			counter: 0, counterSnapshot: 0,
 			start: Date.now()
 		}
-		this.debugEnabled = true
+		this.debugEnabled = storage.getItem('root-debug-enabled') === 'true'
 		this.debugAlt = false
 		this.updateBackground()
 		this.onLayoutChange = () => {}
-		window.onresize = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
-		setTimeout(() => this.probeLayoutInfo(), 500)
-		setTimeout(() => this.probeLayoutInfo(), 1000)
+		const reloadLayout = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
+		document.onload = window.onresize = reloadLayout
+		setTimeout(reloadLayout, 500)
 		setInterval(() => {
-			this.renderStats.v = (this.renderStats.counter - this.renderStats.counterSnapshot)
 			this.renderStats.counterSnapshot = this.renderStats.counter
+			this.renderStats.counter = 0
 			this.updateDebugWidget()
 		}, 1000)
 
@@ -287,7 +304,7 @@ class TabContext {
 		}
 	}
 
-	async _notifyRender(src) {
+	_notifyRender(src) {
 		this.renderStats.counter++
 		if (this.debugAlt) {
 			if (src.__tmp_timer_id) clearTimeout(src.__tmp_timer_id)
@@ -305,26 +322,33 @@ class TabContext {
 		this.updateDebugWidget()
 	}
 
-	async updateBackground() {
+	updateBackground() {
 		const dom = document.getElementById("bgimg")
-		dom.style.backgroundColor = '#333333'
+		const storage = window.localStorage
+		let a
 
-		const error = () => {
-			const bgnum = (Math.floor(Math.random() * 6) + 1)
-			console.log(bgnum)
-			dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
+		if ((a = storage.getItem("bgUrl"))) {
+			return dom.style.backgroundImage = `url(${a})`
+		} else if ((a = storage.getItem("bgNum"))) {
+			return dom.style.backgroundImage = `url(res/bg/${a}.jpg)`
+		} else {
+			const error = () => {
+				const bgnum = (Math.floor(Math.random() * 6) + 1)
+				console.log(bgnum)
+				dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
+			}
+
+			fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,arquitecture,city')
+				.then(imagelists => {
+					const selectedImage = imagelists.url
+					console.log(selectedImage)
+					if (selectedImage.startsWith("https://images.unsplash.com/source-404")) {
+						return error()
+					}
+					dom.style.backgroundImage = `url(${selectedImage})`
+				})
+				.catch(error)
 		}
-
-		fetch('https://source.unsplash.com/1600x900/?winter,wallpaper,nature,arquitecture,city')
-			.then(imagelists => {
-				const selectedImage = imagelists.url
-				console.log(selectedImage)
-				if (selectedImage.startsWith("https://images.unsplash.com/source-404")) {
-					return error()
-				}
-				dom.style.backgroundImage = `url(${selectedImage})`
-			})
-			.catch(error)
 	}
 
 	async probeLayoutInfo() {
@@ -343,9 +367,11 @@ class TabContext {
 		let data = "debugging enabled"
 		data += `, layout size: [${this.gridSizeInfo.width} × ${this.gridSizeInfo.height}] (${this.gridSizeInfo.columns} × ${this.gridSizeInfo.rows})`
 		data += `, widgets attached: ${this.widgets.length}`
-		data += `, updates/sec: ${this.renderStats.v}`
+		data += `, updates/sec: ${this.renderStats.counterSnapshot}`
 
-		document.getElementById('status-debug').innerHTML = data
+		const debugEl = document.getElementById('status-debug')
+		debugEl.style.display = this.debugEnabled ? "block" : "none"
+		debugEl.innerHTML = data
 	}
 
 	/**
@@ -380,6 +406,32 @@ class TabContext {
 	}
 
 	/**
+	 * Calls update on all widgets effectively updating entire grid
+	 */
+	updateAllWidgets() {
+		for (let i = 0; i < this.widgets.length; i++) {
+			this.widgets[i].update()
+		}
+	}
+
+	/**
+	 * Destroys all widgets and recreates them with same parameters as they were created
+	 */
+	rebuildLayout() {
+		for (let i = 0; i < this.widgets.length; i++) {
+			const og = this.widgets[i]
+			const constructor = og.__proto__.constructor
+			og.unload() // unload original widget to cancel all pending tasks that could modify new widget
+			// todo, create new container instead
+			og.container.innerHTML = '' // reset container contents
+			const copy = new constructor(this, og.container, og.extra || {}) // construct new widget
+			this.widgets[i] = copy // replace widget in array
+			copy.update()
+			this.updateDebugWidget()
+		}
+	}
+
+	/**
 	 * Unloads all widgets
 	 */
 	destroy() {
@@ -394,27 +446,58 @@ window.tabContext = new TabContext()
 window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1);
 
 // initialize widgets for top sites
+const autoShortcuts = (storage.getItem('auto-shortcuts') === null) || (storage.getItem('auto-shortcuts') === 'true')
+if (autoShortcuts) {
+	(() => {
+		const topSitesWidgets = []
+		// load top sites widgets at first with no layout parameters
+		chrome.topSites.get(res => {
+			for (let i = 0; i < res.length; i++) {
+				topSitesWidgets.push(
+					window.tabContext.createWidget(LinkWidget,
+						{rel: res[i].url, label: res[i].title},
+						0, 0, 0, 0)
+				)
+			}
+		})
+		// update layout parameters on layout change
+		window.tabContext.onLayoutChange = (oldState, newState) => {
+			const availableHeight = newState.rows - 3
+			for (let i = 0; i < topSitesWidgets.length; i++) {
+				topSitesWidgets[i]._changeLayout({
+					pX: Math.floor(i / availableHeight),
+					pY: 3 + Math.floor(i % availableHeight),
+					w: 1, h: 1
+				})
+			}
+		}
+	})()
+}
+
+// configure preferences menu
 (() => {
-	const topSitesWidgets = []
-	// load top sites widgets at first with no layout parameters
-	chrome.topSites.get(res => {
-		for (let i = 0; i < res.length; i++) {
-			topSitesWidgets.push(
-				window.tabContext.createWidget(LinkWidget,
-					{rel: res[i].url, label: res[i].title},
-					0, 0, 0, 0)
-			)
-		}
-	})
-	// update layout parameters on layout change
-	window.tabContext.onLayoutChange = (oldState, newState) => {
-		const availableHeight = newState.rows - 3
-		for (let i = 0; i < topSitesWidgets.length; i++) {
-			topSitesWidgets[i]._changeLayout({
-				pX: Math.floor(i / availableHeight),
-				pY: 3 + Math.floor(i % availableHeight),
-				w: 1, h: 1
-			})
-		}
+	document.getElementById('options-menu-toggle1').onclick =
+		() => document.getElementById('options-menu').style.display = "block"
+	document.getElementById('options-menu-toggle2').onclick =
+		() => document.getElementById('options-menu').style.display = "none"
+	document.getElementById('options-menu-reload').onclick = () => window.tabContext.rebuildLayout()
+
+	document.getElementById('options-menu-i1').checked = autoShortcuts
+	document.getElementById('options-menu-i1').onchange = (e) => {
+		storage.setItem('auto-shortcuts', e.target.checked ? 'true' : 'false')
+		document.location.reload()
+	}
+
+	document.getElementById('options-menu-i2').checked = window.tabContext.debugEnabled
+	document.getElementById('options-menu-i2').onchange = (e) => {
+		window.tabContext.debugEnabled = e.target.checked
+		storage.setItem('root-debug-enabled', e.target.checked ? 'true' : 'false')
+		window.tabContext.updateDebugWidget()
+	}
+
+	document.getElementById('options-menu-i3').checked = storage.getItem('shortcut-circle') === 'true'
+	document.getElementById('options-menu-i3').onchange = (e) => {
+		storage.setItem('shortcut-circle', e.target.checked ? 'true' : 'false')
+		window.tabContext.updateAllWidgets()
 	}
 })()

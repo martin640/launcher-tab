@@ -4,17 +4,38 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>New Tab</title>
-        <link rel="stylesheet" href="/style.css">
-
+        <link rel="stylesheet" href="/res/style.css">
     </head>
     <body>
-        <script defer src="index.js"></script>
+        <script defer src="/res/index.js"></script>
         <div class="app-content">
             <div id="bgimg"></div>
             <div class="app-layout-grid" id="ref-lay-grid">
 
             </div>
-            <span id="status-debug">Measuring layout...</span>
+            <div id="status-options">
+                <a href="#" id="options-menu-reload"><img src="/res/icons/refresh.svg"/></a>
+                <a href="#" id="options-menu-toggle1"><img src="/res/icons/gear.svg"/></a>
+            </div>
+            <div id="status-info"></div><!-- attribution text -->
+            <div id="status-debug">Measuring layout...</div>
+            <div id="options-menu">
+                <div class="header">
+                    <span>Preferences</span>
+                    <a href="#" id="options-menu-toggle2">
+                        <img src="/res/icons/close-button.svg"/>
+                    </a>
+                </div>
+                <p>
+                    <label><input type="checkbox" id="options-menu-i1"> Automatically add top sites as shortcuts</label>
+                </p>
+                <p>
+                    <label><input type="checkbox" id="options-menu-i2"> Allow debugging</label>
+                </p>
+                <p>
+                    <label><input type="checkbox" id="options-menu-i3"> Shortcuts: Use circle icon shape</label>
+                </p>
+            </div>
             <div style="display: none"><!-- remove this in the future and replace it with widgets -->
                 <div class="middle">
                     <span style="font-size: 3vh;text-shadow: 0 0 2px gray;" id="battery"></span>

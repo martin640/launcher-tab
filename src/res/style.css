@@ -1,0 +1,80 @@
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+@font-face {
+    font-family: Inter-regular;
+    src: url(Inter-Regular.ttf);
+}
+
+.app-content {
+    height: 100%;
+    position: relative;
+    color: white;
+    font-family: 'Inter-Regular', sans-serif;
+}
+
+#bgimg {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-position: center;
+    background-size: cover;
+    background-color: #333;
+    filter: brightness(0.6);
+}
+#status-options {
+    position: absolute; padding: 12px;
+    right: 0; top: 0;
+    color: #ffffff; text-shadow: 0 0 8px black;
+}
+#status-options img {
+    max-height: 16px; max-width: 16px; margin-left: 8px;
+}
+#status-info {
+    position: absolute; padding: 8px;
+    left: 0; bottom: 0;
+    color: #ffffff99; text-shadow: 0 0 8px black;
+}
+#status-debug {
+    position: absolute; padding: 8px;
+    right: 0; bottom: 0;
+    color: aquamarine; text-shadow: 0 0 8px black;
+}
+
+.app-layout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    grid-template-rows: repeat(auto-fill, minmax(100px, 1fr));
+    grid-column-gap: 8px;
+    grid-row-gap: 8px;
+    position: absolute;
+    top: 24px; right: 24px; bottom: 24px; left: 24px;
+}
+
+#options-menu {
+    display: none;
+    position: absolute; width: 350px; background-color: #212121;
+    top: 0; right: 0; bottom: 0; padding: 16px;
+    overflow: auto;
+    box-shadow: -3px 0 16px 12px rgba(0,0,0,0.2);
+}
+#options-menu .header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #ffffff33;
+    padding-bottom: 4px; margin-bottom: 8px;
+}
+#options-menu .header span {
+    font-size: 1.8em; font-weight: bold;
+}
+#options-menu .header #options-menu-toggle2 {
+    display: inline-block; padding: 8px;
+}
+#options-menu .header img {
+    max-height: 12px; max-width: 12px;
+}
+
+.orignal_image {
+    position: absolute;
+    top: 95%;
+}
