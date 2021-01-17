@@ -211,6 +211,19 @@ class LinkWidget extends WidgetBase {
 	}
 }
 
+class SampleWidget extends WidgetBase {
+	constructor(context, gridContainer, extra) {
+		super(context, gridContainer, extra)
+		this.content = document.createElement('div')
+		this.content.style.width = "100%"
+		this.content.style.height = "100%"
+		gridContainer.appendChild(this.content)
+	}
+	render(container) {
+		this.content.style.backgroundColor = "#3333ff"
+	}
+}
+
 class MyCustomWidget extends WidgetBase {
 	constructor(context, gridContainer, extra) {
 		super(context, gridContainer, extra)
@@ -275,11 +288,15 @@ class TabContext {
 		}
 		this.debugEnabled = storage.getItem('root-debug-enabled') === 'true'
 		this.debugAlt = false
+		this.mainGrid = document.getElementById('ref-lay-grid')
+		this.sampleGrid = document.getElementById('ref-lay-grid-copy')
 		this.updateBackground()
 		this.onLayoutChange = () => {}
+
 		const reloadLayout = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
 		document.onload = window.onresize = reloadLayout
 		setTimeout(reloadLayout, 500)
+
 		setInterval(() => {
 			this.renderStats.counterSnapshot = this.renderStats.counter
 			this.renderStats.counter = 0
@@ -361,13 +378,22 @@ class TabContext {
 	}
 
 	async probeLayoutInfo() {
-		const element = document.getElementById('ref-lay-grid')
-		const computedStyle = window.getComputedStyle(element)
+		const computedStyle = window.getComputedStyle(this.mainGrid)
 		const old = {...this.gridSizeInfo}
-		this.gridSizeInfo.width = element.clientWidth
-		this.gridSizeInfo.height = element.clientHeight
+		this.gridSizeInfo.width = this.mainGrid.clientWidth
+		this.gridSizeInfo.height = this.mainGrid.clientHeight
 		this.gridSizeInfo.columns = computedStyle.gridTemplateColumns.split(" ").length
 		this.gridSizeInfo.rows = computedStyle.gridTemplateRows.split(" ").length
+
+		this.sampleGrid.innerHTML = ''
+		for (let a = 0; a < this.gridSizeInfo.columns; a++) {
+			for (let b = 0; b < this.gridSizeInfo.rows; b++) {
+				const sampleItem = document.createElement("div")
+				sampleItem.style.gridArea = `${b+1} / ${a+1} / span 1 / span 1`
+				sampleItem.style.border = "1px dashed #ffffff55"
+				this.sampleGrid.appendChild(sampleItem)
+			}
+		}
 
 		this.onLayoutChange(old, {...this.gridSizeInfo})
 	}
@@ -397,12 +423,13 @@ class TabContext {
 	 */
 	createWidget(constructor, extra, pX, pY, w, h, w1 = 0, h1 = 0) {
 		const container = document.createElement("div")
-		document.getElementById('ref-lay-grid').appendChild(container)
+		this.mainGrid.appendChild(container)
 		try {
 			const widget = new constructor(this, container, extra || {})
 			if (widget) {
 				this.widgets.push(widget)
 				widget._changeLayout({pX, pY, w, h, w1, h1})
+				this._registerContainerAsDragView(container)
 				widget.update()
 				this.updateDebugWidget()
 				return widget
@@ -411,6 +438,65 @@ class TabContext {
 		} catch (e) {
 			console.error(`Unhandled error while creating widget: ${e}`)
 			return false
+		}
+	}
+
+	_registerContainerAsDragView(el) {
+		let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0
+		let posX = 0, posY = 0, gridPosition = ""
+
+		const closeDragElement = () => {
+			document.onmouseup = null
+			document.onmousemove = null
+
+			el.style.width = ""
+			el.style.height = ""
+			el.style.border = ""
+			el.style.backgroundColor = ""
+			el.style.position = ""
+			el.style.top = ""
+			el.style.left = ""
+			el.style.gridArea = gridPosition
+
+			this.sampleGrid.style.display = "none"
+			// todo place widget on grid
+		}
+		const elementDrag = (e) => {
+			e.preventDefault()
+			pos1 = e.clientX - pos3
+			pos2 = e.clientY - pos4
+			const a1 = posY + pos2
+			const a2 = posX + pos1
+			el.style.top = a1 + "px"
+			el.style.left = a2 + "px"
+
+			// todo highlight rows and columns where widget will be placed
+			for (let a = 0; a < this.gridSizeInfo.columns; a++) {
+				for (let b = 0; b < this.gridSizeInfo.rows; b++) {
+				}
+			}
+		}
+
+		el.onmousedown = (e) => {
+			e.preventDefault()
+			pos3 = e.clientX
+			pos4 = e.clientY
+			posX = el.offsetLeft
+			posY = el.offsetTop
+
+			el.style.width = el.clientWidth + "px"
+			el.style.height = el.clientHeight + "px"
+			el.style.border = "2px solid #FF0000"
+			el.style.backgroundColor = "#FF000022"
+			el.style.position = "absolute"
+			// reset position within grid to place widget on top left corner of grid
+			gridPosition = el.style.gridArea
+			el.style.gridArea = ""
+
+			this.sampleGrid.style.display = "grid"
+			document.onmouseup = closeDragElement
+			document.onmousemove = elementDrag
+			elementDrag(e)
 		}
 	}
 
@@ -452,7 +538,8 @@ class TabContext {
 }
 
 window.tabContext = new TabContext()
-window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1);
+window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
+window.tabContext.createWidget(SampleWidget, undefined, 4, 4, 2, 2)
 
 // initialize widgets for top sites
 const autoShortcuts = (storage.getItem('auto-shortcuts') === null) || (storage.getItem('auto-shortcuts') === 'true')
