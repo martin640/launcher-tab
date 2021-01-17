@@ -7,6 +7,9 @@ body, html {
     font-family: Inter-regular;
     src: url(Inter-Regular.ttf);
 }
+.toolset-padding-within {
+    -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
+}
 
 .app-content {
     height: 100%;
@@ -54,11 +57,11 @@ body, html {
 }
 
 #options-menu {
-    position: absolute; width: 350px; background-color: #212121;
-    top: 0; right: -400px; bottom: 0; padding: 16px;
+    position: absolute; width: 350px; background-color: #21212199;
+    backdrop-filter: blur(8px);
+    top: 0; right: -350px; bottom: 0; padding: 16px;
     overflow: auto; opacity: 0;
-    box-shadow: -3px 0 16px 12px rgba(0,0,0,0.2);
-    transition: right 200ms ease-in-out, opacity 200ms ease-in-out;
+    transition: right 0.4s cubic-bezier(0.860, 0.000, 0.070, 1.000), opacity 0.4s ease-in-out;
 }
 #options-menu.shown {
     right: 0; opacity: 1;
