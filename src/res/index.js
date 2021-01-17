@@ -340,7 +340,7 @@ class TabContext {
 				dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
 			}
 
-			fetch('https://picsum.photos/1900/1000')
+			fetch('https://picsum.photos/1900/900')
 				.then(res => {
 					const selectedImage = res.url
 					if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
