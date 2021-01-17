@@ -350,13 +350,10 @@ class TabContext {
 					dom.style.backgroundImage = `url(${selectedImage})`
 				})*/
 
-			fetch('https://picsum.photos/1600/1900')
+			fetch('https://picsum.photos/1900/900')
 				.then(imagelists => {
 					const selectedImage = imagelists.url
-					console.log(selectedImage)
-					if (selectedImage.contains("404" || "error")) {
-						return error()
-					}
+					console.log(selectedImage)	
 					dom.style.backgroundImage = `url(${selectedImage})`
 					attribute.innerHTML = `<a>Photo by <a class="ul">${name} on Unsplash`
 				})
