@@ -40,6 +40,11 @@ body, html {
     left: 0; bottom: 0;
     color: #ffffff99; text-shadow: 0 0 8px black;
 }
+
+#status-info a{
+    text-decoration: underline;
+}
+
 #status-debug {
     position: absolute; padding: 8px;
     right: 0; bottom: 0;

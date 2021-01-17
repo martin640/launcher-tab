@@ -63,7 +63,7 @@ class ClockWidget extends WidgetBase {
 		this.timeEl = document.createElement('span')
 		this.timeEl.style.display = "block"
 		this.timeEl.style.textAlign = "center"
-		this.timeEl.style.fontSize = "20vh"
+		this.timeEl.style.fontSize = "16vh"
 		this.timeEl.style.fontWeight = "100"
 		this.timeEl.style.textShadow = "0 0 2px gray"
 		gridContainer.appendChild(this.timeEl)
