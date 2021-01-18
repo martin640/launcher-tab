@@ -21,9 +21,9 @@ jobs:
           cd project-compile
           npm ci
           npm run build
-          mv build launcher-tab
       - name: Zip sources
         run: |
+          mv build launcher-tab
           zip -r packed.zip launcher-tab
       - name: Create Release
         id: create_release
