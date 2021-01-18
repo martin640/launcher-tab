@@ -234,61 +234,79 @@ class MyCustomWidget extends Widget {
 	}
 }
 
-window.tabContext = new TabContext()
-window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
-window.tabContext.createWidget(SampleWidget, undefined, 4, 4, 3, 2)
-
-window.tabContext.saveLayout = (widgets) => {
-	for (let i = 0; i < widgets.length; i++) {
-		const w = widgets[i]
-		if (w.id) {
-			const params = JSON.stringify(w.layout.abstract)
-			storage.setItem('layout-saved-id-' + w.id, params)
-		}
+(() => {
+	const widgetClasses = {
+		ClockWidget, LinkWidget, SampleWidget, MyCustomWidget
 	}
-}
 
-// initialize widgets for top sites
-const autoShortcuts = (storage.getItem('auto-shortcuts') === null) || (storage.getItem('auto-shortcuts') === 'true')
-if (autoShortcuts) {
-	(() => {
-		const topSitesWidgets = []
-		// load top sites widgets at first with no layout parameters
-		chrome.topSites.get(res => {
-			for (let i = 0; i < res.length; i++) {
-				const w = window.tabContext.createWidget(LinkWidget,
-					{rel: res[i].url, label: res[i].title},
-					undefined, undefined, 0, 0)
-				w.id = ++widgetIdPool
-				topSitesWidgets.push(w)
-			}
-		})
-		// update layout parameters on layout change
-		window.tabContext.onLayoutParamsChange = (oldState, newState) => {
-			const availableHeight = newState.rows - 3
-			for (let i = 0; i < topSitesWidgets.length; i++) {
-				const w = topSitesWidgets[i]
-				try {
-					const savedParams = JSON.parse(storage.getItem('layout-saved-id-' + w.id))
-					topSitesWidgets[i].changeLayout({
-						pX: savedParams.pX,
-						pY: savedParams.pY,
-						w: 1, h: 1
-					})
-				} catch (e) {
-					topSitesWidgets[i].changeLayout({
-						pX: Math.floor(i / availableHeight),
-						pY: 3 + Math.floor(i % availableHeight),
-						w: 1, h: 1
-					})
+	window.tabContext = new TabContext()
+
+	// parse saved layout state
+	let layoutState
+	const layoutStateSaved = storage.getItem('layoutState')
+	if (!layoutStateSaved || !(layoutState = JSON.parse(layoutStateSaved))) {
+		layoutState = [
+			{type: "ClockWidget", id: ++widgetIdPool, layout: {pX: 0, pY: 0, w: 0, h: 3, rW: -1}},
+			{type: "SampleWidget", id: ++widgetIdPool, layout: {pX: 4, pY: 4, w: 3, h: 2}}
+		]
+		for (let i = 0; i < 10; i++) {
+			layoutState.push({
+				type: "LinkWidget",
+				id: ++widgetIdPool,
+				extra: {topSiteNum: i},
+				layout: {pX: undefined, pY: undefined, w: 1, h: 1}
+			})
+		}
+		storage.setItem('layoutState', JSON.stringify(layoutState))
+	}
+
+	// attach saved widgets
+	for (let i = 0; i < layoutState.length; i++) {
+		const row = layoutState[i]
+		const targetClass = widgetClasses[row.type]
+		if (!targetClass) {
+			console.warn(`Failed to inflate saved widget: Widget type ${row.type} not found`)
+			continue
+		}
+
+		const w = window.tabContext.createWidget(targetClass, row.extra,
+			row.layout.pX, row.layout.pY, row.layout.w, row.layout.h, row.layout.rW, row.layout.rH)
+		if (row.id) w.id = row.id
+	}
+
+	// load top sites into placeholder widgets
+	// noinspection JSUnresolvedVariable
+	chrome.topSites.get(res => {
+		for (let i = 0; i < res.length; i++) {
+			const r = res[i]
+			for (let a = 0; a < window.tabContext.widgets.length; a++) {
+				const w = window.tabContext.widgets[a]
+				if (w.extra.topSiteNum === i) {
+					w.extra.rel = r.url
+					w.extra.label = r.title
+					w.invalidate()
 				}
 			}
 		}
-	})()
-}
+	})
 
-// configure preferences menu
-(() => {
+	window.tabContext.saveLayout = (widgets) => {
+		layoutState = []
+		for (let i = 0; i < widgets.length; i++) {
+			const w = widgets[i]
+			if (w.id) {
+				layoutState.push({
+					type: w.__proto__.constructor.name,
+					id: w.id,
+					extra: w.extra,
+					layout: w.layout.abstract
+				})
+			}
+		}
+		storage.setItem('layoutState', JSON.stringify(layoutState))
+	}
+
+	// configure preferences menu
 	document.getElementById('options-menu-toggle1').onclick =
 		() => document.getElementById('options-menu').classList.add('shown')
 	document.getElementById('options-menu-toggle2').onclick =
@@ -296,7 +314,8 @@ if (autoShortcuts) {
 	document.getElementById('options-menu-reload').onclick = () => window.tabContext.rebuildLayout()
 	document.getElementById('options-menu-edit').onclick = () => window.tabContext.setEditModeActive(!window.tabContext.editMode)
 
-	document.getElementById('options-menu-i1').checked = autoShortcuts
+	// todo: remove auto-shortcuts from preferences screen because it's not used anymore
+	document.getElementById('options-menu-i1').checked = false
 	document.getElementById('options-menu-i1').onchange = (e) => {
 		storage.setItem('auto-shortcuts', e.target.checked ? 'true' : 'false')
 		document.location.reload()

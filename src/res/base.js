@@ -18,6 +18,10 @@ class Widget {
         return this.__state.topContainer
     }
 
+    get extra() {
+        return this.__state.extra
+    }
+
     /**
      * Widget should call this function whenever its state changes and needs to be updated.
      * API automatically decides whether {@link update} gets called or not.
@@ -54,17 +58,26 @@ class Widget {
             const xIsRelative = !a.w && a.rW
             const yIsRelative = !a.h && a.rH
 
+            b.h = yIsRelative ? (this.__context.gridSizeInfo.rows + a.rH + a.pY + 1) : a.h
+            b.w = xIsRelative ? (this.__context.gridSizeInfo.columns + a.rW + a.pX + 1) : a.w
+
+            if ((typeof a.pX === 'undefined') || (typeof a.pY === 'undefined')) {
+                // todo find position for widget automatically
+                b.x = 0
+                b.y = 0
+            } else {
+                b.x = a.pX
+                b.y = a.pY
+            }
+
             let gridArea = ''
-            gridArea += String(a.pY >= 0 ? (a.pY+1) : a.pY)
+            gridArea += String(b.y+1)
             gridArea += ' / '
-            gridArea += String(a.pX >= 0 ? (a.pX+1) : a.pX)
+            gridArea += String(b.x+1)
             gridArea += ' / '
             gridArea += yIsRelative ? String(a.rH) : `span ${a.h}`
             gridArea += ' / '
             gridArea += xIsRelative ? String(a.rW) : `span ${a.w}`
-
-            b.h = yIsRelative ? (this.__context.gridSizeInfo.rows + a.rH + a.pY + 1) : a.h
-            b.w = xIsRelative ? (this.__context.gridSizeInfo.columns + a.rW + a.pX + 1) : a.w
 
             c.style.gridArea = gridArea
         }
@@ -355,9 +368,7 @@ class TabContext {
                 this.saveLayout(this.widgets)
             }
             else el.style.gridArea = gridPosition
-
             this.sampleGrid.style.display = "none"
-            // todo place widget on grid
         }
         const elementDrag = (e) => {
             e.preventDefault()
