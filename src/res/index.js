@@ -17,48 +17,14 @@ const getDateDetails = () => {
 	}
 }
 
-class WidgetBase {
-	constructor(context, gridContainer, extra) {
-		this.update.bind(this)
-		this.render.bind(this)
-		this.unload.bind(this)
-		this._context = context
-		this._container = gridContainer
-		this._extra = extra
-	}
-	get container() {
-		return this._container
-	}
-	get extra() {
-		return this._extra
-	}
-	_changeLayout(config) {
-		const {pX, pY, w, h, w1 = 0, h1 = 0} = config
-		this._container.style.gridArea =
-			`${pY >= 0 ? (pY+1) : pY} / ${pX >= 0 ? (pX+1) : pX} / ${h ? ('span ' + h) : h1} / ${w ? ('span ' + w) : w1}`
-	}
-	update() {
-		this._context._notifyRender(this)
-		this.render(this._container)
-	}
-	render(container) {
-		container.style.backgroundColor = "#d20000"
-		container.style.color = "#fff"
-		container.style.padding = "8px"
-		container.innerHTML = "<b>Warning: Widget should override render() function without calling super.render()</b>"
-	}
-	unload() {}
-}
-
-class ClockWidget extends WidgetBase {
-	constructor(context, gridContainer, extra) {
-		super(context, gridContainer, extra);
+class ClockWidget extends Widget {
+	prepareLayout(container, extra) {
 		this.checkTime = (i) => ((i < 10) ? "0" + i : i)
 
-		gridContainer.style.display = "flex"
-		gridContainer.style.flexDirection = "column"
-		gridContainer.style.alignItems = "center"
-		gridContainer.style.justifyContent = "center"
+		container.style.display = "flex"
+		container.style.flexDirection = "column"
+		container.style.alignItems = "center"
+		container.style.justifyContent = "center"
 
 		this.timeEl = document.createElement('span')
 		this.timeEl.style.display = "block"
@@ -66,7 +32,7 @@ class ClockWidget extends WidgetBase {
 		this.timeEl.style.fontSize = "16vh"
 		this.timeEl.style.fontWeight = "100"
 		this.timeEl.style.textShadow = "0 0 2px gray"
-		gridContainer.appendChild(this.timeEl)
+		container.appendChild(this.timeEl)
 
 		this.secondRowEl = document.createElement('span')
 		this.secondRowEl.style.display = "block"
@@ -74,7 +40,7 @@ class ClockWidget extends WidgetBase {
 		this.secondRowEl.style.fontSize = "4vh"
 		this.secondRowEl.style.fontWeight = "200"
 		this.secondRowEl.style.textShadow = "0 0 2px gray"
-		gridContainer.appendChild(this.secondRowEl)
+		container.appendChild(this.secondRowEl)
 
 		this.dateEl = document.createElement('span')
 		this.secondRowEl.appendChild(this.dateEl)
@@ -94,21 +60,21 @@ class ClockWidget extends WidgetBase {
 		this.weatherTempEl = document.createElement('span')
 		this.weatherEl.appendChild(this.weatherTempEl)
 
-		this.timeUpdateTimer = setInterval(() => this.update(), 1000)
+		this.timeUpdateTimer = setInterval(() => this.invalidate(), 1000)
 		this.weatherUpdateTimer = setInterval(() => this.fetchWeather(), 900000)
 		this.fetchWeather()
 
 		this.timeEl.onmouseenter = () => {
 			this.timeHovered = true
 			clearInterval(this.timeUpdateTimer)
-			this.timeUpdateTimer = setInterval(() => this.update(), 200)
-			this.update()
+			this.timeUpdateTimer = setInterval(() => this.invalidate(), 200)
+			this.invalidate()
 		}
 		this.timeEl.onmouseleave = () => {
 			this.timeHovered = false
 			clearInterval(this.timeUpdateTimer)
-			this.timeUpdateTimer = setInterval(() => this.update(), 1000)
-			this.update()
+			this.timeUpdateTimer = setInterval(() => this.invalidate(), 1000)
+			this.invalidate()
 		}
 	}
 
@@ -141,7 +107,7 @@ class ClockWidget extends WidgetBase {
 			.catch(e => console.log(e))
 	}
 
-	render(container) {
+	update(container, extra) {
 		const today = new Date(),
 			h = this.checkTime(today.getHours()),
 			m = this.checkTime(today.getMinutes()),
@@ -157,18 +123,17 @@ class ClockWidget extends WidgetBase {
 		const d = getDateDetails()
 		this.dateEl.innerHTML = `${d.day}, ${d.month} ${d.date}`
 	}
+
 	unload() {
 		clearInterval(this.timeUpdateTimer)
 		clearInterval(this.weatherUpdateTimer)
 	}
 }
 
-class LinkWidget extends WidgetBase {
-	constructor(context, gridContainer, extra) {
-		super(context, gridContainer, extra)
-
+class LinkWidget extends Widget {
+	prepareLayout(container, extra) {
 		this.innerView = document.createElement('a')
-		gridContainer.appendChild(this.innerView)
+		container.appendChild(this.innerView)
 
 		this.iconEl = document.createElement('img')
 		this.innerView.appendChild(this.iconEl)
@@ -177,9 +142,7 @@ class LinkWidget extends WidgetBase {
 		this.innerView.appendChild(this.labelEl)
 	}
 
-	render(container) {
-		const extra = this.extra
-
+	update(container, extra) {
 		this.innerView.style.display = "flex"
 		this.innerView.style.width = "100%"
 		this.innerView.style.height = "100%"
@@ -211,20 +174,15 @@ class LinkWidget extends WidgetBase {
 	}
 }
 
-class SampleWidget extends WidgetBase {
-	constructor(context, gridContainer, extra) {
-		super(context, gridContainer, extra)
-		this.content = document.createElement('div')
-		this.content.style.width = "100%"
-		this.content.style.height = "100%"
-		gridContainer.appendChild(this.content)
-	}
-	render(container) {
-		this.content.style.backgroundColor = "#3333ff"
+class SampleWidget extends Widget {
+	prepareLayout(container, extra) { }
+
+	update(container, extra) {
+		container.style.backgroundColor = "#1b79ff"
 	}
 }
 
-class MyCustomWidget extends WidgetBase {
+class MyCustomWidget extends Widget {
 	constructor(context, gridContainer, extra) {
 		super(context, gridContainer, extra)
 		this.deviceState = {
@@ -539,7 +497,7 @@ class TabContext {
 
 window.tabContext = new TabContext()
 window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
-window.tabContext.createWidget(SampleWidget, undefined, 4, 4, 2, 2)
+window.tabContext.createWidget(SampleWidget, undefined, 4, 4, 3, 2)
 
 // initialize widgets for top sites
 const autoShortcuts = (storage.getItem('auto-shortcuts') === null) || (storage.getItem('auto-shortcuts') === 'true')
@@ -560,7 +518,7 @@ if (autoShortcuts) {
 		window.tabContext.onLayoutChange = (oldState, newState) => {
 			const availableHeight = newState.rows - 3
 			for (let i = 0; i < topSitesWidgets.length; i++) {
-				topSitesWidgets[i]._changeLayout({
+				topSitesWidgets[i].changeLayout({
 					pX: Math.floor(i / availableHeight),
 					pY: 3 + Math.floor(i % availableHeight),
 					w: 1, h: 1
@@ -577,6 +535,7 @@ if (autoShortcuts) {
 	document.getElementById('options-menu-toggle2').onclick =
 		() => document.getElementById('options-menu').classList.remove('shown')
 	document.getElementById('options-menu-reload').onclick = () => window.tabContext.rebuildLayout()
+	document.getElementById('options-menu-edit').onclick = () => window.tabContext.setEditModeActive(!window.tabContext.editMode)
 
 	document.getElementById('options-menu-i1').checked = autoShortcuts
 	document.getElementById('options-menu-i1').onchange = (e) => {
