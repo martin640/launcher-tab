@@ -63,8 +63,8 @@ body, html {
 
 #options-menu {
     position: absolute; width: 350px; background-color: #21212199;
-    backdrop-filter: blur(8px);
-    top: 0; right: -350px; bottom: 0; padding: 16px;
+    backdrop-filter: blur(8px); border-left: 1px solid #ffffff11;
+    top: 0; right: -355px; bottom: 0; padding: 16px;
     overflow: auto; opacity: 0;
     transition: right 0.4s cubic-bezier(0.860, 0.000, 0.070, 1.000), opacity 0.4s ease-in-out;
 }
