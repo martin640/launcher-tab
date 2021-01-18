@@ -1,5 +1,6 @@
 const store = chrome.storage.sync
 const storage = window.localStorage
+let widgetIdPool = 0
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 const getDateDetails = () => {
@@ -237,6 +238,16 @@ window.tabContext = new TabContext()
 window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
 window.tabContext.createWidget(SampleWidget, undefined, 4, 4, 3, 2)
 
+window.tabContext.saveLayout = (widgets) => {
+	for (let i = 0; i < widgets.length; i++) {
+		const w = widgets[i]
+		if (w.id) {
+			const params = JSON.stringify(w.layout.abstract)
+			storage.setItem('layout-saved-id-' + w.id, params)
+		}
+	}
+}
+
 // initialize widgets for top sites
 const autoShortcuts = (storage.getItem('auto-shortcuts') === null) || (storage.getItem('auto-shortcuts') === 'true')
 if (autoShortcuts) {
@@ -245,22 +256,32 @@ if (autoShortcuts) {
 		// load top sites widgets at first with no layout parameters
 		chrome.topSites.get(res => {
 			for (let i = 0; i < res.length; i++) {
-				topSitesWidgets.push(
-					window.tabContext.createWidget(LinkWidget,
-						{rel: res[i].url, label: res[i].title},
-						0, 0, 0, 0)
-				)
+				const w = window.tabContext.createWidget(LinkWidget,
+					{rel: res[i].url, label: res[i].title},
+					undefined, undefined, 0, 0)
+				w.id = ++widgetIdPool
+				topSitesWidgets.push(w)
 			}
 		})
 		// update layout parameters on layout change
-		window.tabContext.onLayoutChange = (oldState, newState) => {
+		window.tabContext.onLayoutParamsChange = (oldState, newState) => {
 			const availableHeight = newState.rows - 3
 			for (let i = 0; i < topSitesWidgets.length; i++) {
-				topSitesWidgets[i].changeLayout({
-					pX: Math.floor(i / availableHeight),
-					pY: 3 + Math.floor(i % availableHeight),
-					w: 1, h: 1
-				})
+				const w = topSitesWidgets[i]
+				try {
+					const savedParams = JSON.parse(storage.getItem('layout-saved-id-' + w.id))
+					topSitesWidgets[i].changeLayout({
+						pX: savedParams.pX,
+						pY: savedParams.pY,
+						w: 1, h: 1
+					})
+				} catch (e) {
+					topSitesWidgets[i].changeLayout({
+						pX: Math.floor(i / availableHeight),
+						pY: 3 + Math.floor(i % availableHeight),
+						w: 1, h: 1
+					})
+				}
 			}
 		}
 	})()

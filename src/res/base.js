@@ -113,7 +113,8 @@ class TabContext {
         this.mainGrid = document.getElementById('ref-lay-grid')
         this.sampleGrid = document.getElementById('ref-lay-grid-copy')
         this.updateBackground()
-        this.onLayoutChange = () => {}
+        this.onLayoutParamsChange = () => {}
+        this.saveLayout = () => {}
 
         const reloadLayout = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
         document.onload = window.onresize = reloadLayout
@@ -240,7 +241,7 @@ class TabContext {
             }
         }
 
-        this.onLayoutChange(old, {...this.gridSizeInfo})
+        this.onLayoutParamsChange(old, {...this.gridSizeInfo})
     }
 
     updateDebugWidget() {
@@ -349,7 +350,10 @@ class TabContext {
             el.style.position = ""
             el.style.top = ""
             el.style.left = ""
-            if (newParams) widget.changeLayout(newParams)
+            if (newParams) {
+                widget.changeLayout(newParams)
+                this.saveLayout(this.widgets)
+            }
             else el.style.gridArea = gridPosition
 
             this.sampleGrid.style.display = "none"
