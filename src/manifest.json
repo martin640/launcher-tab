@@ -16,7 +16,7 @@
   },
   "background": {
     "scripts": [
-      "res/background.js"
+      "background.js"
     ],
     "persistent": false
   }

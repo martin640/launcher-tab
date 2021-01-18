@@ -178,41 +178,40 @@ class TabContext {
                 console.log(`Error: ${e}, using built-in wallpapers num ${bgnum}`)
                 dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
             }
+            const fetchFromPicsum = async () => {
+                const res = await fetch('https://picsum.photos/1900/900')
 
-            /* fetch('https://picsum.photos/1900/900')
-                .then(res => {
-                    const selectedImage = res.url
-                    if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
-                        return error()
-                    }
-                    dom.style.backgroundImage = `url(${selectedImage})`
+                const selectedImage = res.url
+                if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
+                    return error()
+                }
+                const imgId = /id\/(.+?)\//g.exec(selectedImage)[1]
+                const info = await (await fetch(`https://picsum.photos/id/${imgId}/info`)).json()
 
-                    const imgId = /id\/(.+?)\//g.exec(selectedImage)[1]
-                    fetch(`https://picsum.photos/id/${imgId}/info`)
-                        .then(res => res.json())
-                        .then(res => {
-                            attribute.innerHTML = `<a href="${res.url}">Photo by ${res.author} on Unsplash</a>`
-                        })
-                        .catch(console.log)
-                })
-                .catch(error) */
-                fetch('http://natanparrondo.github.io/prettyearth')
-                .then(res => {
-                    const selectedImage = res.url
-                    if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
-                        return error()
-                    }
-                    dom.style.backgroundImage = `url(${selectedImage})`
+                return {src: selectedImage, attribution: `<a href="${info.url}">Photo by ${info.author} on Unsplash</a>`}
+            }
+            const fetchFromGEarth = async () => {
+                const idsList = (await (await fetch(`/res/gearthids.json`)).json()).ids
+                if (!Array.isArray(idsList)) return error()
+                const randomId = idsList[Math.floor(Math.random() * idsList.length)]
 
-                    const imgId = /id\/(.+?)\//g.exec(selectedImage)[1]
-                    fetch(`https://picsum.photos/id/${imgId}/info`)
-                        .then(res => res.json())
-                        .then(res => {
-                            attribute.innerHTML = `<a href="${res.url}">Photo by ${res.author} on Unsplash</a>`
-                        })
-                        .catch(console.log)
-                })
-                .catch(error)
+                return {
+                    src: `https://www.gstatic.com/prettyearth/assets/full/${randomId}.jpg`,
+                    attribution: `<a href="">Photo from Google Earth</a>`
+                }
+            }
+
+            const preferredSource = storage.getItem("bgSource")
+            let bgPromise
+            if (!preferredSource || preferredSource === '1')
+                bgPromise = fetchFromGEarth()
+            if (preferredSource === '2')
+                bgPromise = fetchFromPicsum()
+
+            bgPromise.then(res => {
+                dom.style.backgroundImage = `url(${res.src})`
+                attribute.innerHTML = res.attribution
+            }).catch(error)
         }
     }
 
