@@ -17,48 +17,14 @@ const getDateDetails = () => {
 	}
 }
 
-class WidgetBase {
-	constructor(context, gridContainer, extra) {
-		this.update.bind(this)
-		this.render.bind(this)
-		this.unload.bind(this)
-		this._context = context
-		this._container = gridContainer
-		this._extra = extra
-	}
-	get container() {
-		return this._container
-	}
-	get extra() {
-		return this._extra
-	}
-	_changeLayout(config) {
-		const {pX, pY, w, h, w1 = 0, h1 = 0} = config
-		this._container.style.gridArea =
-			`${pY >= 0 ? (pY+1) : pY} / ${pX >= 0 ? (pX+1) : pX} / ${h ? ('span ' + h) : h1} / ${w ? ('span ' + w) : w1}`
-	}
-	update() {
-		this._context._notifyRender(this)
-		this.render(this._container)
-	}
-	render(container) {
-		container.style.backgroundColor = "#d20000"
-		container.style.color = "#fff"
-		container.style.padding = "8px"
-		container.innerHTML = "<b>Warning: Widget should override render() function without calling super.render()</b>"
-	}
-	unload() {}
-}
-
-class ClockWidget extends WidgetBase {
-	constructor(context, gridContainer, extra) {
-		super(context, gridContainer, extra);
+class ClockWidget extends Widget {
+	prepareLayout(container, extra) {
 		this.checkTime = (i) => ((i < 10) ? "0" + i : i)
 
-		gridContainer.style.display = "flex"
-		gridContainer.style.flexDirection = "column"
-		gridContainer.style.alignItems = "center"
-		gridContainer.style.justifyContent = "center"
+		container.style.display = "flex"
+		container.style.flexDirection = "column"
+		container.style.alignItems = "center"
+		container.style.justifyContent = "center"
 
 		this.timeEl = document.createElement('span')
 		this.timeEl.style.display = "block"
@@ -66,7 +32,7 @@ class ClockWidget extends WidgetBase {
 		this.timeEl.style.fontSize = "16vh"
 		this.timeEl.style.fontWeight = "100"
 		this.timeEl.style.textShadow = "0 0 2px gray"
-		gridContainer.appendChild(this.timeEl)
+		container.appendChild(this.timeEl)
 
 		this.secondRowEl = document.createElement('span')
 		this.secondRowEl.style.display = "block"
@@ -74,7 +40,7 @@ class ClockWidget extends WidgetBase {
 		this.secondRowEl.style.fontSize = "4vh"
 		this.secondRowEl.style.fontWeight = "200"
 		this.secondRowEl.style.textShadow = "0 0 2px gray"
-		gridContainer.appendChild(this.secondRowEl)
+		container.appendChild(this.secondRowEl)
 
 		this.dateEl = document.createElement('span')
 		this.secondRowEl.appendChild(this.dateEl)
@@ -94,21 +60,21 @@ class ClockWidget extends WidgetBase {
 		this.weatherTempEl = document.createElement('span')
 		this.weatherEl.appendChild(this.weatherTempEl)
 
-		this.timeUpdateTimer = setInterval(() => this.update(), 1000)
+		this.timeUpdateTimer = setInterval(() => this.invalidate(), 1000)
 		this.weatherUpdateTimer = setInterval(() => this.fetchWeather(), 900000)
 		this.fetchWeather()
 
 		this.timeEl.onmouseenter = () => {
 			this.timeHovered = true
 			clearInterval(this.timeUpdateTimer)
-			this.timeUpdateTimer = setInterval(() => this.update(), 200)
-			this.update()
+			this.timeUpdateTimer = setInterval(() => this.invalidate(), 200)
+			this.invalidate()
 		}
 		this.timeEl.onmouseleave = () => {
 			this.timeHovered = false
 			clearInterval(this.timeUpdateTimer)
-			this.timeUpdateTimer = setInterval(() => this.update(), 1000)
-			this.update()
+			this.timeUpdateTimer = setInterval(() => this.invalidate(), 1000)
+			this.invalidate()
 		}
 	}
 
@@ -141,7 +107,7 @@ class ClockWidget extends WidgetBase {
 			.catch(e => console.log(e))
 	}
 
-	render(container) {
+	update(container, extra) {
 		const today = new Date(),
 			h = this.checkTime(today.getHours()),
 			m = this.checkTime(today.getMinutes()),
@@ -157,18 +123,17 @@ class ClockWidget extends WidgetBase {
 		const d = getDateDetails()
 		this.dateEl.innerHTML = `${d.day}, ${d.month} ${d.date}`
 	}
+
 	unload() {
 		clearInterval(this.timeUpdateTimer)
 		clearInterval(this.weatherUpdateTimer)
 	}
 }
 
-class LinkWidget extends WidgetBase {
-	constructor(context, gridContainer, extra) {
-		super(context, gridContainer, extra)
-
+class LinkWidget extends Widget {
+	prepareLayout(container, extra) {
 		this.innerView = document.createElement('a')
-		gridContainer.appendChild(this.innerView)
+		container.appendChild(this.innerView)
 
 		this.iconEl = document.createElement('img')
 		this.innerView.appendChild(this.iconEl)
@@ -177,9 +142,7 @@ class LinkWidget extends WidgetBase {
 		this.innerView.appendChild(this.labelEl)
 	}
 
-	render(container) {
-		const extra = this.extra
-
+	update(container, extra) {
 		this.innerView.style.display = "flex"
 		this.innerView.style.width = "100%"
 		this.innerView.style.height = "100%"
@@ -211,20 +174,15 @@ class LinkWidget extends WidgetBase {
 	}
 }
 
-class SampleWidget extends WidgetBase {
-	constructor(context, gridContainer, extra) {
-		super(context, gridContainer, extra)
-		this.content = document.createElement('div')
-		this.content.style.width = "100%"
-		this.content.style.height = "100%"
-		gridContainer.appendChild(this.content)
-	}
-	render(container) {
-		this.content.style.backgroundColor = "#3333ff"
+class SampleWidget extends Widget {
+	prepareLayout(container, extra) { }
+
+	update(container, extra) {
+		container.style.backgroundColor = "#1b79ff"
 	}
 }
 
-class MyCustomWidget extends WidgetBase {
+class MyCustomWidget extends Widget {
 	constructor(context, gridContainer, extra) {
 		super(context, gridContainer, extra)
 		this.deviceState = {
@@ -275,271 +233,9 @@ class MyCustomWidget extends WidgetBase {
 	}
 }
 
-class TabContext {
-	constructor() {
-		this.gridSizeInfo = {
-			width: -1, height: -1,
-			columns: -1, rows: -1
-		}
-		this.widgets = []
-		this.renderStats = {
-			counter: 0, counterSnapshot: 0,
-			start: Date.now()
-		}
-		this.debugEnabled = storage.getItem('root-debug-enabled') === 'true'
-		this.debugAlt = false
-		this.mainGrid = document.getElementById('ref-lay-grid')
-		this.sampleGrid = document.getElementById('ref-lay-grid-copy')
-		this.updateBackground()
-		this.onLayoutChange = () => {}
-
-		const reloadLayout = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
-		document.onload = window.onresize = reloadLayout
-		setTimeout(reloadLayout, 500)
-
-		setInterval(() => {
-			this.renderStats.counterSnapshot = this.renderStats.counter
-			this.renderStats.counter = 0
-			this.updateDebugWidget()
-		}, 1000)
-
-		const debugEl = document.getElementById('status-debug')
-		debugEl.onmouseenter = () => {
-			this.debugAlt = true
-			for (let i = 0; i < this.widgets.length; i++) {
-				const w = this.widgets[i]
-				w.container.style.outline = "2px dashed #00FF91"
-				w.container.style.backgroundColor = "#00FF9133"
-			}
-		}
-		debugEl.onmouseleave = () => {
-			this.debugAlt = false
-			for (let i = 0; i < this.widgets.length; i++) {
-				const w = this.widgets[i]
-				w.container.style.outline = "unset"
-				w.container.style.backgroundColor = "unset"
-			}
-		}
-	}
-
-	_notifyRender(src) {
-		this.renderStats.counter++
-		if (this.debugAlt) {
-			if (src.__tmp_timer_id) clearTimeout(src.__tmp_timer_id)
-			src.container.style.outline = "2px dashed #FF00D5"
-			src.__tmp_timer_id = setTimeout(() => {
-				src.__tmp_timer_id = undefined
-				if (this.debugAlt) {
-					src.container.style.outline = "2px dashed #00FF91"
-				} else {
-					src.container.style.outline = "unset"
-					src.container.style.backgroundColor = "unset"
-				}
-			}, 150)
-		}
-		this.updateDebugWidget()
-	}
-
-	updateBackground() {
-		const dom = document.getElementById("bgimg")
-		const attribute = document.getElementById("status-info")
-		const storage = window.localStorage
-		let a
-
-		if ((a = storage.getItem("bgUrl"))) {
-			return dom.style.backgroundImage = `url(${a})`
-		} else if ((a = storage.getItem("bgNum"))) {
-			return dom.style.backgroundImage = `url(res/bg/${a}.jpg)`
-		} else {
-			const error = (e) => {
-				const bgnum = (Math.floor(Math.random() * 6) + 1)
-				console.log(`Error: ${e}, using built-in wallpapers num ${bgnum}`)
-				dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
-			}
-
-			fetch('https://picsum.photos/1900/900')
-				.then(res => {
-					const selectedImage = res.url
-					if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
-						return error()
-					}
-					dom.style.backgroundImage = `url(${selectedImage})`
-
-					const imgId = /id\/(.+?)\//g.exec(selectedImage)[1]
-					fetch(`https://picsum.photos/id/${imgId}/info`)
-						.then(res => res.json())
-						.then(res => {
-							attribute.innerHTML = `Photo by <a href="${res.url}">${res.author}</a> on Unsplash`
-						})
-						.catch(console.log)
-				})
-				.catch(error)
-		}
-	}
-
-	async probeLayoutInfo() {
-		const computedStyle = window.getComputedStyle(this.mainGrid)
-		const old = {...this.gridSizeInfo}
-		this.gridSizeInfo.width = this.mainGrid.clientWidth
-		this.gridSizeInfo.height = this.mainGrid.clientHeight
-		this.gridSizeInfo.columns = computedStyle.gridTemplateColumns.split(" ").length
-		this.gridSizeInfo.rows = computedStyle.gridTemplateRows.split(" ").length
-
-		this.sampleGrid.innerHTML = ''
-		for (let a = 0; a < this.gridSizeInfo.columns; a++) {
-			for (let b = 0; b < this.gridSizeInfo.rows; b++) {
-				const sampleItem = document.createElement("div")
-				sampleItem.style.gridArea = `${b+1} / ${a+1} / span 1 / span 1`
-				sampleItem.style.border = "1px dashed #ffffff55"
-				this.sampleGrid.appendChild(sampleItem)
-			}
-		}
-
-		this.onLayoutChange(old, {...this.gridSizeInfo})
-	}
-
-	updateDebugWidget() {
-		let data = "debugging enabled"
-		data += `, layout size: [${this.gridSizeInfo.width} × ${this.gridSizeInfo.height}] (${this.gridSizeInfo.columns} × ${this.gridSizeInfo.rows})`
-		data += `, widgets attached: ${this.widgets.length}`
-		data += `, updates/sec: ${this.renderStats.counterSnapshot}`
-
-		const debugEl = document.getElementById('status-debug')
-		debugEl.style.display = this.debugEnabled ? "block" : "none"
-		debugEl.innerHTML = data
-	}
-
-	/**
-	 * Creates a new widget and attaches it to the grid
-	 * @param constructor reference to widget class
-	 * @param extra extra options to be passed to the widget
-	 * @param pX x position of widget (in grid lines)
-	 * @param pY y position of widget (in grid lines)
-	 * @param w width of widget (in grid lines)
-	 * @param h height of widget (in grid lines)
-	 * @param w1 end x position of widget (in grid lines) this parameter takes effect only if w is 0
-	 * @param h1 end y position of widget (in grid lines) this parameter takes effect only if y is 0
-	 * @returns {boolean|WidgetBase} returns constructed widget of false on error
-	 */
-	createWidget(constructor, extra, pX, pY, w, h, w1 = 0, h1 = 0) {
-		const container = document.createElement("div")
-		this.mainGrid.appendChild(container)
-		try {
-			const widget = new constructor(this, container, extra || {})
-			if (widget) {
-				this.widgets.push(widget)
-				widget._changeLayout({pX, pY, w, h, w1, h1})
-				this._registerContainerAsDragView(container)
-				widget.update()
-				this.updateDebugWidget()
-				return widget
-			} else
-				return false
-		} catch (e) {
-			console.error(`Unhandled error while creating widget: ${e}`)
-			return false
-		}
-	}
-
-	_registerContainerAsDragView(el) {
-		let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0
-		let posX = 0, posY = 0, gridPosition = ""
-
-		const closeDragElement = () => {
-			document.onmouseup = null
-			document.onmousemove = null
-
-			el.style.width = ""
-			el.style.height = ""
-			el.style.border = ""
-			el.style.backgroundColor = ""
-			el.style.position = ""
-			el.style.top = ""
-			el.style.left = ""
-			el.style.gridArea = gridPosition
-
-			this.sampleGrid.style.display = "none"
-			// todo place widget on grid
-		}
-		const elementDrag = (e) => {
-			e.preventDefault()
-			pos1 = e.clientX - pos3
-			pos2 = e.clientY - pos4
-			const a1 = posY + pos2
-			const a2 = posX + pos1
-			el.style.top = a1 + "px"
-			el.style.left = a2 + "px"
-
-			// todo highlight rows and columns where widget will be placed
-			for (let a = 0; a < this.gridSizeInfo.columns; a++) {
-				for (let b = 0; b < this.gridSizeInfo.rows; b++) {
-				}
-			}
-		}
-
-		el.onmousedown = (e) => {
-			e.preventDefault()
-			pos3 = e.clientX
-			pos4 = e.clientY
-			posX = el.offsetLeft
-			posY = el.offsetTop
-
-			el.style.width = el.clientWidth + "px"
-			el.style.height = el.clientHeight + "px"
-			el.style.border = "2px solid #FF0000"
-			el.style.backgroundColor = "#FF000022"
-			el.style.position = "absolute"
-			// reset position within grid to place widget on top left corner of grid
-			gridPosition = el.style.gridArea
-			el.style.gridArea = ""
-
-			this.sampleGrid.style.display = "grid"
-			document.onmouseup = closeDragElement
-			document.onmousemove = elementDrag
-			elementDrag(e)
-		}
-	}
-
-	/**
-	 * Calls update on all widgets effectively updating entire grid
-	 */
-	updateAllWidgets() {
-		for (let i = 0; i < this.widgets.length; i++) {
-			this.widgets[i].update()
-		}
-	}
-
-	/**
-	 * Destroys all widgets and recreates them with same parameters as they were created
-	 */
-	rebuildLayout() {
-		for (let i = 0; i < this.widgets.length; i++) {
-			const og = this.widgets[i]
-			const constructor = og.__proto__.constructor
-			og.unload() // unload original widget to cancel all pending tasks that could modify new widget
-			// todo, create new container instead
-			og.container.innerHTML = '' // reset container contents
-			const copy = new constructor(this, og.container, og.extra || {}) // construct new widget
-			this.widgets[i] = copy // replace widget in array
-			copy.update()
-			this.updateDebugWidget()
-		}
-	}
-
-	/**
-	 * Unloads all widgets
-	 */
-	destroy() {
-		for (let i = 0; i < this.widgets.length; i++) {
-			this.widgets[i].unload()
-		}
-		this.widgets.length = 0
-	}
-}
-
 window.tabContext = new TabContext()
 window.tabContext.createWidget(ClockWidget, undefined, 0, 0, 0, 3, -1)
-window.tabContext.createWidget(SampleWidget, undefined, 4, 4, 2, 2)
+window.tabContext.createWidget(SampleWidget, undefined, 4, 4, 3, 2)
 
 // initialize widgets for top sites
 const autoShortcuts = (storage.getItem('auto-shortcuts') === null) || (storage.getItem('auto-shortcuts') === 'true')
@@ -560,7 +256,7 @@ if (autoShortcuts) {
 		window.tabContext.onLayoutChange = (oldState, newState) => {
 			const availableHeight = newState.rows - 3
 			for (let i = 0; i < topSitesWidgets.length; i++) {
-				topSitesWidgets[i]._changeLayout({
+				topSitesWidgets[i].changeLayout({
 					pX: Math.floor(i / availableHeight),
 					pY: 3 + Math.floor(i % availableHeight),
 					w: 1, h: 1
@@ -577,6 +273,7 @@ if (autoShortcuts) {
 	document.getElementById('options-menu-toggle2').onclick =
 		() => document.getElementById('options-menu').classList.remove('shown')
 	document.getElementById('options-menu-reload').onclick = () => window.tabContext.rebuildLayout()
+	document.getElementById('options-menu-edit').onclick = () => window.tabContext.setEditModeActive(!window.tabContext.editMode)
 
 	document.getElementById('options-menu-i1').checked = autoShortcuts
 	document.getElementById('options-menu-i1').onchange = (e) => {
