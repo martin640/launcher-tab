@@ -179,7 +179,24 @@ class TabContext {
                 dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
             }
 
-            fetch('https://picsum.photos/1900/900')
+            /* fetch('https://picsum.photos/1900/900')
+                .then(res => {
+                    const selectedImage = res.url
+                    if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
+                        return error()
+                    }
+                    dom.style.backgroundImage = `url(${selectedImage})`
+
+                    const imgId = /id\/(.+?)\//g.exec(selectedImage)[1]
+                    fetch(`https://picsum.photos/id/${imgId}/info`)
+                        .then(res => res.json())
+                        .then(res => {
+                            attribute.innerHTML = `<a href="${res.url}">Photo by ${res.author} on Unsplash</a>`
+                        })
+                        .catch(console.log)
+                })
+                .catch(error) */
+                fetch('http://natanparrondo.github.io/prettyearth')
                 .then(res => {
                     const selectedImage = res.url
                     if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
