@@ -191,7 +191,7 @@ class TabContext {
                     fetch(`https://picsum.photos/id/${imgId}/info`)
                         .then(res => res.json())
                         .then(res => {
-                            attribute.innerHTML = `Photo by <a href="${res.url}">${res.author}</a> on Unsplash`
+                            attribute.innerHTML = `<a href="${res.url}">Photo by ${res.author} on Unsplash</a>`
                         })
                         .catch(console.log)
                 })
