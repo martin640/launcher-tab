@@ -43,6 +43,7 @@ body, html {
 }
 #status-info a {
     color: inherit;
+    text-decoration: none;
 }
 #status-debug {
     position: absolute; padding: 16px;
