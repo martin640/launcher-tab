@@ -197,7 +197,7 @@ class TabContext {
 
                 return {
                     src: `https://www.gstatic.com/prettyearth/assets/full/${randomId}.jpg`,
-                    attribution: `<a href="">Photo from Google Earth</a>`
+                    attribution: `<a href="https://earth.google.com/web/">Photo from Google Earth</a>`
                 }
             }
 
