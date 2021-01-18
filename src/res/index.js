@@ -293,4 +293,10 @@ if (autoShortcuts) {
 		storage.setItem('shortcut-circle', e.target.checked ? 'true' : 'false')
 		window.tabContext.updateAllWidgets()
 	}
+
+	document.getElementById('options-menu-i4').value = storage.getItem('bgSource') || "1"
+	document.getElementById('options-menu-i4').onchange = (e) => {
+		storage.setItem('bgSource', e.target.value)
+		window.tabContext.updateBackground()
+	}
 })()
