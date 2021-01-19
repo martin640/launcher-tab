@@ -6,6 +6,6 @@ Open source Android launcher like new tab replacement for default new tab
 - Minimal size and fast loading time
 - API for writing widgets
 
-![Alt text](https://i.imgur.com/k9LKsnB.png "Screenshot")
+![Alt text](https://i.imgur.com/lmH6exi.png "Screenshot")
 
-Feel free to Contribute
+Feel free to contribute
