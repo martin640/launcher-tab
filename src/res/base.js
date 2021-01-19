@@ -333,7 +333,6 @@ class TabContext {
 
                 topContainer.className = 'lt-api-widget'
                 dragHandle.className = 'handle'
-                dragHandle.style.cursor = 'grabbing'
                 dragHandle.src = '/res/icons/drag_indicator-white-18dp.svg'
 
                 topContainer.appendChild(dragHandle)
