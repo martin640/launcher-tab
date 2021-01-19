@@ -18,6 +18,10 @@ class Widget {
         return this.__state.topContainer
     }
 
+    get dragHandle() {
+        return this.__state.dragHandle
+    }
+
     get extra() {
         return this.__state.extra
     }
@@ -47,10 +51,10 @@ class Widget {
 
     changeLayout(data) {
         this.__state.layout.abstract = {...this.__state.layout.abstract, ...data}
-        this.measure()
+        this.__context._recalculateLayout()
     }
 
-    measure() {
+    measure(gridStateList) {
         if (this.__state.attached) {
             const a = this.__state.layout.abstract
             const b = this.__state.layout.measured
@@ -62,9 +66,22 @@ class Widget {
             b.w = xIsRelative ? (this.__context.gridSizeInfo.columns + a.rW + a.pX + 1) : a.w
 
             if ((typeof a.pX === 'undefined') || (typeof a.pY === 'undefined')) {
-                // todo find position for widget automatically
-                b.x = 0
-                b.y = 0
+                b.x = -1
+                b.y = -1
+                spaceSearchLoop: for (let x = 0; x < gridStateList.length; x++) {
+                    for (let y = 0; y < gridStateList[x].length; y++) {
+                        // todo check if space matches widget width and height
+                        if (!gridStateList[x][y]) {
+                            b.x = x
+                            b.y = y
+                            break spaceSearchLoop
+                        }
+                    }
+                }
+                if (b.x === -1 || b.y === -1) {
+                    b.x = 0
+                    b.y = 0
+                }
             } else {
                 b.x = a.pX
                 b.y = a.pY
@@ -80,6 +97,12 @@ class Widget {
             gridArea += xIsRelative ? String(a.rW) : `span ${a.w}`
 
             c.style.gridArea = gridArea
+
+            for (let x = b.x; (x < (b.x + b.w)) && (x < gridStateList.length); x++) {
+                for (let y = b.y; (y < (b.y + b.h)) && (y < gridStateList[x].length); y++) {
+                    gridStateList[x][y] = true
+                }
+            }
         }
     }
 
@@ -114,7 +137,8 @@ class TabContext {
         this.gridSizeInfo = {
             width: -1, height: -1,
             columns: Number(this.storage.getItem('cache-grid-x') || -1),
-            rows: Number(this.storage.getItem('cache-grid-y') || -1)
+            rows: Number(this.storage.getItem('cache-grid-y') || -1),
+            layoutStateList: []
         }
         this.widgets = []
         this.renderStats = {
@@ -139,8 +163,8 @@ class TabContext {
             this.updateDebugWidget()
         }, 1000)
 
-        const debugEl = document.getElementById('status-debug')
-        debugEl.onmouseenter = () => {
+        this.debugEl = document.getElementById('lt-control-debug')
+        this.debugEl.onmouseenter = () => {
             this.debugAlt = true
             for (let i = 0; i < this.widgets.length; i++) {
                 const w = this.widgets[i]
@@ -148,7 +172,7 @@ class TabContext {
                 w.topContainer.style.backgroundColor = "#00FF9133"
             }
         }
-        debugEl.onmouseleave = () => {
+        this.debugEl.onmouseleave = () => {
             this.debugAlt = false
             for (let i = 0; i < this.widgets.length; i++) {
                 const w = this.widgets[i]
@@ -177,8 +201,8 @@ class TabContext {
     }
 
     updateBackground() {
-        const dom = document.getElementById("bgimg")
-        const attribute = document.getElementById("status-info")
+        const dom = document.getElementById("lt-app-background")
+        const attribute = document.getElementById("lt-control-attribution")
         const storage = this.storage
         let a
 
@@ -240,9 +264,7 @@ class TabContext {
         this.storage.setItem("cache-grid-x", String(this.gridSizeInfo.columns))
         this.storage.setItem("cache-grid-y", String(this.gridSizeInfo.rows))
 
-        for (let i = 0; i < this.widgets.length; i++) {
-            this.widgets[i].measure()
-        }
+        this._recalculateLayout()
 
         this.sampleGrid.innerHTML = ''
         for (let a = 0; a < this.gridSizeInfo.columns; a++) {
@@ -263,9 +285,8 @@ class TabContext {
         data += `, widgets attached: ${this.widgets.length}`
         data += `, updates/sec: ${this.renderStats.counterSnapshot}`
 
-        const debugEl = document.getElementById('status-debug')
-        debugEl.style.display = this.debugEnabled ? "block" : "none"
-        debugEl.innerHTML = data
+        this.debugEl.style.display = this.debugEnabled ? "block" : "none"
+        this.debugEl.innerHTML = data
     }
 
     /**
@@ -284,6 +305,7 @@ class TabContext {
         try {
             const topContainer = document.createElement("div")
             const nestedContainer = document.createElement("div")
+            const dragHandle = document.createElement("img")
             const widgetData = {
                 layout: {
                     abstract: {pX, pY, w, h, rW: w1, rH: h1},
@@ -291,6 +313,7 @@ class TabContext {
                 },
                 topContainer: topContainer,
                 nestedContainer: nestedContainer,
+                dragHandle: dragHandle,
                 attached: true,
                 extra: extra || {}
             }
@@ -299,41 +322,56 @@ class TabContext {
             if (widget) {
                 this.widgets.push(widget)
 
-                widget.measure()
+                this._recalculateLayout()
                 nestedContainer.style.width = "100%"
                 nestedContainer.style.height = "100%"
 
+                topContainer.className = 'lt-api-widget'
+                dragHandle.className = 'handle'
+                dragHandle.src = '/res/icons/drag_indicator-white-18dp.svg'
+
+                topContainer.appendChild(dragHandle)
                 topContainer.appendChild(nestedContainer)
                 this.mainGrid.appendChild(topContainer)
 
                 widget.prepareLayout(nestedContainer, widgetData.extra)
                 widget.update(nestedContainer, widgetData.extra)
 
+                this._registerContainerAsDragView(widget)
+
                 this.updateDebugWidget()
                 return widget
 
             } else return false
         } catch (e) {
-            console.error(`Unhandled error while creating widget: ${e}`)
+            console.error('Unhandled error while creating widget')
+            console.error(e)
             return false
         }
     }
 
-    setEditModeActive(b) {
-        this.editMode = b
+    _recalculateLayout() {
+        const newLayoutStateList = this._resetLayoutStateList()
+        for (let i = 0; i < this.widgets.length; i++) {
+            this.widgets[i].measure(newLayoutStateList)
+        }
+    }
 
-        if (this.editMode) {
-            for (let i = 0; i < this.widgets.length; i++) {
-                const w = this.widgets[i]
-                this._registerContainerAsDragView(w)
-            }
-        } else {
-            for (let i = 0; i < this.widgets.length; i++) {
-                const c = this.widgets[i].topContainer
-                c.onmousedown = undefined
-                c.style.border = ""
+    _resetLayoutStateList() {
+        const arr = this.gridSizeInfo.layoutStateList = []
+        for (let a = 0; a < this.gridSizeInfo.columns; a++) {
+            arr[a] = []
+            for (let b = 0; b < this.gridSizeInfo.rows; b++) {
+                arr[a][b] = false
             }
         }
+
+        return arr
+    }
+
+    /* @deprecated */
+    setEditModeActive(b) {
+
     }
 
     _getNewLayoutParams(top, left) {
@@ -348,9 +386,10 @@ class TabContext {
     }
 
     _registerContainerAsDragView(widget) {
-        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0
-        let posX = 0, posY = 0, gridPosition = "", newParams
-        const el = widget.topContainer
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0, posX = 0, posY = 0
+        let gridPosition = "", newParams, tmpGridBackdrop
+
+        const drag = widget.dragHandle, el = widget.topContainer
 
         const closeDragElement = () => {
             document.onmouseup = null
@@ -358,7 +397,7 @@ class TabContext {
 
             el.style.width = ""
             el.style.height = ""
-            el.style.border = "2px dashed #C8C8C8"
+            el.style.border = ""
             el.style.backgroundColor = ""
             el.style.position = ""
             el.style.top = ""
@@ -369,6 +408,7 @@ class TabContext {
             }
             else el.style.gridArea = gridPosition
             this.sampleGrid.style.display = "none"
+            tmpGridBackdrop.remove()
         }
         const elementDrag = (e) => {
             e.preventDefault()
@@ -381,20 +421,24 @@ class TabContext {
 
             // todo highlight rows and columns where widget will be placed
             newParams = this._getNewLayoutParams(a1, a2)
+            tmpGridBackdrop.style.gridArea = `${newParams.pY+1} / ${newParams.pX+1} / span ${widget.layout.measured.h} / span ${widget.layout.measured.w}`
         }
 
-        el.style.border = "2px dashed #C8C8C8"
-        el.onmousedown = (e) => {
+        drag.onmousedown = (e) => {
             e.preventDefault()
             pos3 = e.clientX
             pos4 = e.clientY
             posX = el.offsetLeft
             posY = el.offsetTop
+            tmpGridBackdrop = document.createElement('div')
+            tmpGridBackdrop.style.backgroundColor = "#ffffff33"
+            tmpGridBackdrop.style.border = "2px solid #ffffff66"
+            this.sampleGrid.appendChild(tmpGridBackdrop)
 
             el.style.width = el.clientWidth + "px"
             el.style.height = el.clientHeight + "px"
             el.style.border = "2px solid #FF0000"
-            el.style.backgroundColor = "#FF000022"
+            el.style.backgroundColor = "#FF000044"
             el.style.position = "absolute"
             // reset position within grid to place widget on top left corner of grid
             gridPosition = el.style.gridArea
