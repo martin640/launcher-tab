@@ -311,7 +311,10 @@ class MyCustomWidget extends Widget {
 	document.getElementById('options-menu-toggle2').onclick =
 		() => document.getElementById('options-menu').classList.remove('shown')
 	document.getElementById('options-menu-reload').onclick = () => window.tabContext.rebuildLayout()
-	document.getElementById('options-menu-edit').onclick = () => window.tabContext.setEditModeActive(!window.tabContext.editMode)
+	document.getElementById('options-menu-edit').onclick = () => {
+		window.tabContext.setEditModeActive(!window.tabContext.editMode)
+		document.getElementById('options-menu-edit').classList.toggle("active", window.tabContext.editMode)
+	}
 
 	// todo: remove auto-shortcuts from preferences screen because it's not used anymore
 	document.getElementById('options-menu-i1').checked = false
