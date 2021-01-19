@@ -47,10 +47,10 @@ class Widget {
 
     changeLayout(data) {
         this.__state.layout.abstract = {...this.__state.layout.abstract, ...data}
-        this.measure()
+        this.__context._recalculateLayout()
     }
 
-    measure() {
+    measure(gridStateList) {
         if (this.__state.attached) {
             const a = this.__state.layout.abstract
             const b = this.__state.layout.measured
@@ -62,9 +62,22 @@ class Widget {
             b.w = xIsRelative ? (this.__context.gridSizeInfo.columns + a.rW + a.pX + 1) : a.w
 
             if ((typeof a.pX === 'undefined') || (typeof a.pY === 'undefined')) {
-                // todo find position for widget automatically
-                b.x = 0
-                b.y = 0
+                b.x = -1
+                b.y = -1
+                spaceSearchLoop: for (let x = 0; x < gridStateList.length; x++) {
+                    for (let y = 0; y < gridStateList[x].length; y++) {
+                        // todo check if space matches widget width and height
+                        if (!gridStateList[x][y]) {
+                            b.x = x
+                            b.y = y
+                            break spaceSearchLoop
+                        }
+                    }
+                }
+                if (b.x === -1 || b.y === -1) {
+                    b.x = 0
+                    b.y = 0
+                }
             } else {
                 b.x = a.pX
                 b.y = a.pY
@@ -80,6 +93,12 @@ class Widget {
             gridArea += xIsRelative ? String(a.rW) : `span ${a.w}`
 
             c.style.gridArea = gridArea
+
+            for (let x = b.x; (x < (b.x + b.w)) && (x < gridStateList.length); x++) {
+                for (let y = b.y; (y < (b.y + b.h)) && (y < gridStateList[x].length); y++) {
+                    gridStateList[x][y] = true
+                }
+            }
         }
     }
 
@@ -114,7 +133,8 @@ class TabContext {
         this.gridSizeInfo = {
             width: -1, height: -1,
             columns: Number(this.storage.getItem('cache-grid-x') || -1),
-            rows: Number(this.storage.getItem('cache-grid-y') || -1)
+            rows: Number(this.storage.getItem('cache-grid-y') || -1),
+            layoutStateList: []
         }
         this.widgets = []
         this.renderStats = {
@@ -240,9 +260,7 @@ class TabContext {
         this.storage.setItem("cache-grid-x", String(this.gridSizeInfo.columns))
         this.storage.setItem("cache-grid-y", String(this.gridSizeInfo.rows))
 
-        for (let i = 0; i < this.widgets.length; i++) {
-            this.widgets[i].measure()
-        }
+        this._recalculateLayout()
 
         this.sampleGrid.innerHTML = ''
         for (let a = 0; a < this.gridSizeInfo.columns; a++) {
@@ -299,7 +317,7 @@ class TabContext {
             if (widget) {
                 this.widgets.push(widget)
 
-                widget.measure()
+                this._recalculateLayout()
                 nestedContainer.style.width = "100%"
                 nestedContainer.style.height = "100%"
 
@@ -314,9 +332,29 @@ class TabContext {
 
             } else return false
         } catch (e) {
-            console.error(`Unhandled error while creating widget: ${e}`)
+            console.error('Unhandled error while creating widget')
+            console.error(e)
             return false
         }
+    }
+
+    _recalculateLayout() {
+        const newLayoutStateList = this._resetLayoutStateList()
+        for (let i = 0; i < this.widgets.length; i++) {
+            this.widgets[i].measure(newLayoutStateList)
+        }
+    }
+
+    _resetLayoutStateList() {
+        const arr = this.gridSizeInfo.layoutStateList = []
+        for (let a = 0; a < this.gridSizeInfo.columns; a++) {
+            arr[a] = []
+            for (let b = 0; b < this.gridSizeInfo.rows; b++) {
+                arr[a][b] = false
+            }
+        }
+
+        return arr
     }
 
     setEditModeActive(b) {
