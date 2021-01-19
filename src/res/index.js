@@ -166,6 +166,7 @@ class LinkWidget extends Widget {
 		this.iconEl.src = `chrome://favicon/${extra.rel}`
 
 		this.labelEl.style.overflow = "hidden"
+		this.labelEl.id = "widget-label"
 		this.labelEl.style.textOverflow = "ellipsis"
 		this.labelEl.style.textAlign = "center"
 		this.labelEl.style.display = "-webkit-box"

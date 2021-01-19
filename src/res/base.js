@@ -328,6 +328,7 @@ class TabContext {
 
                 topContainer.className = 'lt-api-widget'
                 dragHandle.className = 'handle'
+                dragHandle.style.cursor = 'grabbing'
                 dragHandle.src = '/res/icons/drag_indicator-white-18dp.svg'
 
                 topContainer.appendChild(dragHandle)
@@ -426,6 +427,7 @@ class TabContext {
 
         drag.onmousedown = (e) => {
             e.preventDefault()
+            const widgetLabel = document.getElementById("widget-label")
             pos3 = e.clientX
             pos4 = e.clientY
             posX = el.offsetLeft
@@ -437,9 +439,10 @@ class TabContext {
 
             el.style.width = el.clientWidth + "px"
             el.style.height = el.clientHeight + "px"
-            el.style.border = "2px solid #FF0000"
-            el.style.backgroundColor = "#FF000044"
+            el.style.border = "2px solid #FFFFFF66"
+            el.style.backgroundColor = "#FFFFFF77"
             el.style.position = "absolute"
+            widgetLabel.style.textShadow = "0 0 8px black"
             // reset position within grid to place widget on top left corner of grid
             gridPosition = el.style.gridArea
             el.style.gridArea = ""
