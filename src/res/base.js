@@ -88,9 +88,9 @@ class Widget {
             }
 
             let gridArea = ''
-            gridArea += String(b.y+1)
+            gridArea += String(b.y + 1)
             gridArea += ' / '
-            gridArea += String(b.x+1)
+            gridArea += String(b.x + 1)
             gridArea += ' / '
             gridArea += yIsRelative ? String(a.rH) : `span ${a.h}`
             gridArea += ' / '
@@ -127,7 +127,8 @@ class Widget {
      * Called when widget is being destroyed or reset. Widget should cancel all pending tasks here.
      * Widget should not make any further changes to DOM because API will automatically remove elements.
      */
-    unload() { }
+    unload() {
+    }
 }
 
 class TabContext {
@@ -150,8 +151,10 @@ class TabContext {
         this.mainGrid = document.getElementById('ref-lay-grid')
         this.sampleGrid = document.getElementById('ref-lay-grid-copy')
         this.updateBackground()
-        this.onLayoutParamsChange = () => {}
-        this.saveLayout = () => {}
+        this.onLayoutParamsChange = () => {
+        }
+        this.saveLayout = () => {
+        }
 
         const reloadLayout = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
         document.onload = window.onresize = reloadLayout
@@ -204,53 +207,54 @@ class TabContext {
         const dom = document.getElementById("lt-app-background")
         const attribute = document.getElementById("lt-control-attribution")
         const storage = this.storage
-        let a
 
-        if ((a = storage.getItem("bgUrl"))) {
-            return dom.style.backgroundImage = `url(${a})`
-        } else if ((a = storage.getItem("bgNum"))) {
-            return dom.style.backgroundImage = `url(res/bg/${a}.jpg)`
-        } else {
-            const error = (e) => {
-                const bgnum = (Math.floor(Math.random() * 6) + 1)
-                console.log(`Error: ${e}, using built-in wallpapers num ${bgnum}`)
-                dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
-            }
-            const fetchFromPicsum = async () => {
-                const res = await fetch('https://picsum.photos/1900/900')
-
-                const selectedImage = res.url
-                if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
-                    return error()
-                }
-                const imgId = /id\/(.+?)\//g.exec(selectedImage)[1]
-                const info = await (await fetch(`https://picsum.photos/id/${imgId}/info`)).json()
-
-                return {src: selectedImage, attribution: `<a href="${info.url}">Photo by ${info.author} on Unsplash</a>`}
-            }
-            const fetchFromGEarth = async () => {
-                const idsList = (await (await fetch(`/res/gearthids.json`)).json()).ids
-                if (!Array.isArray(idsList)) return error()
-                const randomId = idsList[Math.floor(Math.random() * idsList.length)]
-
-                return {
-                    src: `https://www.gstatic.com/prettyearth/assets/full/${randomId}.jpg`,
-                    attribution: `<a href="https://earth.google.com/web/">Photo from Google Earth (Map data ©2020 Google)</a>`
-                }
-            }
-
-            const preferredSource = storage.getItem("bgSource")
-            let bgPromise
-            if (!preferredSource || preferredSource === '1')
-                bgPromise = fetchFromGEarth()
-            if (preferredSource === '2')
-                bgPromise = fetchFromPicsum()
-
-            bgPromise.then(res => {
-                dom.style.backgroundImage = `url(${res.src})`
-                attribute.innerHTML = res.attribution
-            }).catch(error)
+        const error = (e) => {
+            const bgnum = (Math.floor(Math.random() * 6) + 1)
+            console.log(`Error: ${e}, using built-in wallpapers num ${bgnum}`)
+            dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
         }
+        const fetchFromPicsum = async () => {
+            const res = await fetch('https://picsum.photos/1900/900')
+
+            const selectedImage = res.url
+            if (!selectedImage || selectedImage.includes("404") || selectedImage.includes("error")) {
+                return error()
+            }
+            const imgId = /id\/(.+?)\//g.exec(selectedImage)[1]
+            const info = await (await fetch(`https://picsum.photos/id/${imgId}/info`)).json()
+
+            return {src: selectedImage, attribution: `<a href="${info.url}">Photo by ${info.author} on Unsplash</a>`}
+        }
+        const fetchFromGEarth = async () => {
+            const idsList = (await (await fetch(`/res/gearthids.json`)).json()).ids
+            if (!Array.isArray(idsList)) return error()
+            const randomId = idsList[Math.floor(Math.random() * idsList.length)]
+
+            return {
+                src: `https://www.gstatic.com/prettyearth/assets/full/${randomId}.jpg`,
+                attribution: `<a href="https://earth.google.com/web/">Photo from Google Earth (Map data ©2020 Google)</a>`
+            }
+        }
+        const fetchFromUrl = async () => {
+            return {
+                src: storage.getItem("bgUrl"),
+                attribution: `Local image`
+            }
+        }
+
+        const preferredSource = storage.getItem("bgSource")
+        let bgPromise = Promise.reject()
+        if (!preferredSource || preferredSource === '1')
+            bgPromise = fetchFromGEarth()
+        if (preferredSource === '2')
+            bgPromise = fetchFromPicsum()
+        if (preferredSource === '3')
+            bgPromise = fetchFromUrl()
+
+        bgPromise.then(res => {
+            dom.style.backgroundImage = `url(${res.src})`
+            attribute.innerHTML = res.attribution
+        }).catch(error)
     }
 
     async probeLayoutInfo() {
@@ -270,7 +274,7 @@ class TabContext {
         for (let a = 0; a < this.gridSizeInfo.columns; a++) {
             for (let b = 0; b < this.gridSizeInfo.rows; b++) {
                 const sampleItem = document.createElement("div")
-                sampleItem.style.gridArea = `${b+1} / ${a+1} / span 1 / span 1`
+                sampleItem.style.gridArea = `${b + 1} / ${a + 1} / span 1 / span 1`
                 sampleItem.style.border = "1px dashed #ffffff55"
                 this.sampleGrid.appendChild(sampleItem)
             }
@@ -405,8 +409,7 @@ class TabContext {
             if (newParams) {
                 widget.changeLayout(newParams)
                 this.saveLayout(this.widgets)
-            }
-            else el.style.gridArea = gridPosition
+            } else el.style.gridArea = gridPosition
             this.sampleGrid.style.display = "none"
             tmpGridBackdrop.remove()
         }
@@ -421,7 +424,7 @@ class TabContext {
 
             // todo highlight rows and columns where widget will be placed
             newParams = this._getNewLayoutParams(a1, a2)
-            tmpGridBackdrop.style.gridArea = `${newParams.pY+1} / ${newParams.pX+1} / span ${widget.layout.measured.h} / span ${widget.layout.measured.w}`
+            tmpGridBackdrop.style.gridArea = `${newParams.pY + 1} / ${newParams.pX + 1} / span ${widget.layout.measured.h} / span ${widget.layout.measured.w}`
         }
 
         drag.onmousedown = (e) => {
