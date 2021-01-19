@@ -10,6 +10,7 @@
     "tabs",
     "topSites",
     "unlimitedStorage",
+    "search",
     "chrome://favicon/"
   ],
   "chrome_url_overrides": {
