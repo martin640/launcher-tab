@@ -166,7 +166,6 @@ class LinkWidget extends Widget {
 		this.iconEl.src = `chrome://favicon/${extra.rel}`
 
 		this.labelEl.style.overflow = "hidden"
-		this.labelEl.id = "widget-label"
 		this.labelEl.style.textOverflow = "ellipsis"
 		this.labelEl.style.textAlign = "center"
 		this.labelEl.style.display = "-webkit-box"
@@ -278,20 +277,22 @@ class MyCustomWidget extends Widget {
     }
 
     // load top sites into placeholder widgets
-    // noinspection JSUnresolvedVariable
-    chrome.topSites.get(res => {
-        for (let i = 0; i < res.length; i++) {
-            const r = res[i]
-            for (let a = 0; a < window.tabContext.widgets.length; a++) {
-                const w = window.tabContext.widgets[a]
-                if (w.extra.topSiteNum === i) {
-                    w.extra.rel = r.url
-                    w.extra.label = r.title
-                    w.invalidate()
+    if (!storage.getItem('no-top-sites')) {
+        // noinspection JSUnresolvedVariable
+        chrome.topSites.get(res => {
+            for (let i = 0; i < res.length; i++) {
+                const r = res[i]
+                for (let a = 0; a < window.tabContext.widgets.length; a++) {
+                    const w = window.tabContext.widgets[a]
+                    if (w.extra.topSiteNum === i) {
+                        w.extra.rel = r.url
+                        w.extra.label = r.title
+                        w.invalidate()
+                    }
                 }
             }
-        }
-    })
+        })
+    }
 
     window.tabContext.saveLayout = (widgets) => {
         layoutState = []
@@ -310,10 +311,9 @@ class MyCustomWidget extends Widget {
     }
 
     const loadOptionMenuItems = () => {
-        document.getElementById('lt-preference-HcX4j').checked = false
+        document.getElementById('lt-preference-HcX4j').checked = storage.getItem('no-top-sites') === 'true'
         document.getElementById('lt-preference-HcX4j').onchange = (e) => {
-            storage.setItem('auto-shortcuts', e.target.checked ? 'true' : 'false')
-            document.location.reload()
+            storage.setItem('no-top-sites', e.target.checked ? 'true' : 'false')
         }
 
         document.getElementById('lt-preference-v3i7X').checked = window.tabContext.debugEnabled

@@ -386,8 +386,8 @@ class TabContext {
         const newPosX = Math.floor((left / pxPerColumn) + 0.5)
         const newPosY = Math.floor((top / pxPerRow) + 0.5)
         return {
-            pX: Math.max(Math.min(newPosX, this.gridSizeInfo.width), 0),
-            pY: Math.max(Math.min(newPosY, this.gridSizeInfo.height), 0),
+            pX: Math.max(Math.min(newPosX, this.gridSizeInfo.columns-1), 0),
+            pY: Math.max(Math.min(newPosY, this.gridSizeInfo.rows-1), 0),
         }
     }
 
@@ -431,7 +431,8 @@ class TabContext {
 
         drag.onmousedown = (e) => {
             e.preventDefault()
-            const widgetLabel = document.getElementById("widget-label")
+            // todo you better remove this
+            //const widgetLabel = document.getElementById("widget-label")
             pos3 = e.clientX
             pos4 = e.clientY
             posX = el.offsetLeft
@@ -446,7 +447,7 @@ class TabContext {
             el.style.border = "2px solid #FFFFFF66"
             el.style.backgroundColor = "#FFFFFF77"
             el.style.position = "absolute"
-            widgetLabel.style.textShadow = "0 0 8px black"
+            //widgetLabel.style.textShadow = "0 0 8px black"
             // reset position within grid to place widget on top left corner of grid
             gridPosition = el.style.gridArea
             el.style.gridArea = ""

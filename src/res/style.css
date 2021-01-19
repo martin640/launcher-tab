@@ -71,14 +71,12 @@ body, html {
 
 #lt-preferences {
     position: absolute; width: 350px; background-color: #21212199;
-    backdrop-filter: blur(8px); border-left: 1px solid #ffffff11;
+    backdrop-filter: blur(12px); border-left: 1px solid #ffffff11;
     top: 0; right: -355px; bottom: 0; padding: 16px;
-    overflow: auto; opacity: 0;
-    transition: right 0.4s cubic-bezier(0.860, 0.000, 0.070, 1.000), opacity 0.4s ease-in-out;
+    overflow: auto;
+    transition: right 0.35s cubic-bezier(0.860, 0.000, 0.070, 1.000);
 }
-#lt-preferences.open {
-    right: 0; opacity: 1;
-}
+#lt-preferences.open { right: 0 }
 #lt-preferences .header {
     display: flex; justify-content: space-between; align-items: center;
     border-bottom: 2px solid #ffffff33;
@@ -87,7 +85,7 @@ body, html {
 #lt-preferences .header span {
     font-size: 1.8em; font-weight: bold;
 }
-#lt-preferences .header #options-menu-toggle2 {
+#lt-preferences .header #lt-control-option-pref-close {
     display: inline-block; padding: 8px;
 }
 #lt-preferences .header img {
