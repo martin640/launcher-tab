@@ -10,16 +10,24 @@ body, html {
 .toolset-padding-within {
     -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
 }
+.toolset-noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
 
-.app-content {
+.lt-app-content {
     height: 100%;
     position: relative;
     color: white;
     overflow: hidden;
     font-family: 'Inter-Regular', sans-serif;
 }
-
-#bgimg {
+#lt-app-background {
     position: absolute;
     top: 0; right: 0; bottom: 0; left: 0;
     background-position: center;
@@ -27,33 +35,31 @@ body, html {
     background-color: #333;
     filter: brightness(0.6);
 }
-#status-options {
+
+.lt-control-options {
     position: absolute; right: 0; top: 0;
     color: #ffffff; text-shadow: 0 0 8px black;
 }
-#status-options a { display: inline-block; transition: background-color 150ms ease-in-out; position: relative }
-#status-options a:after { content: ''; position: absolute; right: 0; bottom: 0; left: 0; height: 3px }
-#status-options a.active:after { background-color: #ffa344 }
-#status-options a:hover { background-color: #ffffff33 }
-#status-options img {
-    max-height: 20px; max-width: 20px; margin: 16px;
-}
-#status-info {
+.lt-control-options a { display: inline-block; transition: background-color 150ms ease-in-out; position: relative }
+.lt-control-options a:after { content: ''; position: absolute; right: 0; bottom: 0; left: 0; height: 3px }
+.lt-control-options a.active:after { background-color: #ffa344 }
+.lt-control-options a:hover { background-color: #ffffff33 }
+.lt-control-options img { max-height: 20px; max-width: 20px; margin: 16px }
+
+#lt-control-attribution {
     position: absolute; padding: 16px;
     left: 0; bottom: 0;
     color: #ffffff; text-shadow: 0 0 8px black;
 }
-#status-info a {
-    color: inherit;
-    text-decoration: none;
-}
-#status-debug {
+#lt-control-attribution a { color: inherit; text-decoration: none }
+
+#lt-control-debug {
     position: absolute; padding: 16px;
     right: 0; bottom: 0;
     color: aquamarine; text-shadow: 0 0 8px black;
 }
 
-.app-layout-grid {
+.lt-layout {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
     grid-template-rows: repeat(auto-fill, minmax(100px, 1fr));
@@ -63,32 +69,44 @@ body, html {
     top: 40px; right: 16px; bottom: 40px; left: 16px;
 }
 
-#options-menu {
+#lt-preferences {
     position: absolute; width: 350px; background-color: #21212199;
     backdrop-filter: blur(8px); border-left: 1px solid #ffffff11;
     top: 0; right: -355px; bottom: 0; padding: 16px;
     overflow: auto; opacity: 0;
     transition: right 0.4s cubic-bezier(0.860, 0.000, 0.070, 1.000), opacity 0.4s ease-in-out;
 }
-#options-menu.shown {
+#lt-preferences.open {
     right: 0; opacity: 1;
 }
-#options-menu .header {
+#lt-preferences .header {
     display: flex; justify-content: space-between; align-items: center;
     border-bottom: 2px solid #ffffff33;
     padding-bottom: 4px; margin-bottom: 8px;
 }
-#options-menu .header span {
+#lt-preferences .header span {
     font-size: 1.8em; font-weight: bold;
 }
-#options-menu .header #options-menu-toggle2 {
+#lt-preferences .header #options-menu-toggle2 {
     display: inline-block; padding: 8px;
 }
-#options-menu .header img {
+#lt-preferences .header img {
     max-height: 12px; max-width: 12px;
 }
+.lt-preferences-row { display: flex; align-items: center; margin: 8px 0 }
+.lt-preferences-row span { margin: 0 8px }
 
-.orignal_image {
-    position: absolute;
-    top: 95%;
+
+.lt-api-widget {
+    position: relative;
+}
+.lt-api-widget:hover {
+    outline: 2px dashed #ffffff22;
+}
+.lt-api-widget .handle {
+    display: none; position: absolute; top: 0; left: 0;
+    max-width: 16px; max-height: 16px; padding: 5px; cursor: pointer;
+}
+.lt-api-widget:hover .handle {
+    display: block;
 }

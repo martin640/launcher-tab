@@ -305,40 +305,44 @@ class MyCustomWidget extends Widget {
 		storage.setItem('layoutState', JSON.stringify(layoutState))
 	}
 
+	const loadOptionMenuItems = () => {
+		document.getElementById('lt-preference-HcX4j').checked = false
+		document.getElementById('lt-preference-HcX4j').onchange = (e) => {
+			storage.setItem('auto-shortcuts', e.target.checked ? 'true' : 'false')
+			document.location.reload()
+		}
+
+		document.getElementById('lt-preference-v3i7X').checked = window.tabContext.debugEnabled
+		document.getElementById('lt-preference-v3i7X').onchange = (e) => {
+			window.tabContext.debugEnabled = e.target.checked
+			storage.setItem('root-debug-enabled', e.target.checked ? 'true' : 'false')
+			window.tabContext.updateDebugWidget()
+		}
+
+		document.getElementById('lt-preference-ssm2P').checked = storage.getItem('shortcut-circle') === 'true'
+		document.getElementById('lt-preference-ssm2P').onchange = (e) => {
+			storage.setItem('shortcut-circle', e.target.checked ? 'true' : 'false')
+			window.tabContext.updateAllWidgets()
+		}
+
+		document.getElementById('lt-preference-wPBCA').value = storage.getItem('bgSource') || "1"
+		document.getElementById('lt-preference-wPBCA').onchange = (e) => {
+			storage.setItem('bgSource', e.target.value)
+			window.tabContext.updateBackground()
+		}
+	}
+
 	// configure preferences menu
-	document.getElementById('options-menu-toggle1').onclick =
-		() => document.getElementById('options-menu').classList.add('shown')
-	document.getElementById('options-menu-toggle2').onclick =
-		() => document.getElementById('options-menu').classList.remove('shown')
-	document.getElementById('options-menu-reload').onclick = () => window.tabContext.rebuildLayout()
-	document.getElementById('options-menu-edit').onclick = () => {
+	document.getElementById('lt-control-option-pref-open').onclick = () => {
+		document.getElementById('lt-preferences').classList.add('open')
+		loadOptionMenuItems()
+	}
+	document.getElementById('lt-control-option-pref-close').onclick =
+		() => document.getElementById('lt-preferences').classList.remove('open')
+	document.getElementById('lt-control-option-reload').onclick = () => window.tabContext.rebuildLayout()
+	/*document.getElementById('options-menu-edit').onclick = () => {
+		// todo: use this to toggle resize mode
 		window.tabContext.setEditModeActive(!window.tabContext.editMode)
 		document.getElementById('options-menu-edit').classList.toggle("active", window.tabContext.editMode)
-	}
-
-	// todo: remove auto-shortcuts from preferences screen because it's not used anymore
-	document.getElementById('options-menu-i1').checked = false
-	document.getElementById('options-menu-i1').onchange = (e) => {
-		storage.setItem('auto-shortcuts', e.target.checked ? 'true' : 'false')
-		document.location.reload()
-	}
-
-	document.getElementById('options-menu-i2').checked = window.tabContext.debugEnabled
-	document.getElementById('options-menu-i2').onchange = (e) => {
-		window.tabContext.debugEnabled = e.target.checked
-		storage.setItem('root-debug-enabled', e.target.checked ? 'true' : 'false')
-		window.tabContext.updateDebugWidget()
-	}
-
-	document.getElementById('options-menu-i3').checked = storage.getItem('shortcut-circle') === 'true'
-	document.getElementById('options-menu-i3').onchange = (e) => {
-		storage.setItem('shortcut-circle', e.target.checked ? 'true' : 'false')
-		window.tabContext.updateAllWidgets()
-	}
-
-	document.getElementById('options-menu-i4').value = storage.getItem('bgSource') || "1"
-	document.getElementById('options-menu-i4').onchange = (e) => {
-		storage.setItem('bgSource', e.target.value)
-		window.tabContext.updateBackground()
-	}
+	}*/
 })()
