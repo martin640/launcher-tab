@@ -84,14 +84,12 @@ class ClockWidget extends Widget {
         // change unit to selected by user in dialog or if location = us (default )
         let city, unit = "metric"
         try {
-            const ipApiRes = await fetch(`http://ip-api.com/json/?fields=city`)
+            const ipApiRes = await fetch(`http://ip-api.com/json/?fields=countryCode,city`)
             const ipApiJson = await ipApiRes.json()
-            city = ipApiJson.city
+            city = `${ipApiJson.city}, ${ipApiJson.countryCode}`
         } catch (e) {
             return console.warn("Geolocation failed")
         }
-        this.weatherEl.href = `https://openweathermap.org/city/${encodeURIComponent(city)}`
-        this.weatherEl.title = city
 
         fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
             .then(res => res.json())
@@ -103,6 +101,8 @@ class ClockWidget extends Widget {
                 else if (weatherId >= 600 && weatherId < 700) icon = '/res/weather-icons/021-snowing-1.svg'
                 else if (weatherId > 800 && weatherId < 810) icon = '/res/weather-icons/021-cloudy-1.svg'
 
+                this.weatherEl.title = city
+                this.weatherEl.href = `https://openweathermap.org/city/${res.id}`
                 this.weatherIconEl.src = icon
                 this.weatherTempEl.innerHTML = `${Math.round(res.main.temp)} °C`
             })
