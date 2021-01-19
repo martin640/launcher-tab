@@ -330,27 +330,14 @@ class MyCustomWidget extends Widget {
 
         document.getElementById('lt-preference-wPBCA').value = storage.getItem('bgSource') || "1"
         document.getElementById('lt-preference-wPBCA').onchange = (e) => {
+            if (e.target.value === '3') {
+                const url = prompt("Image address")
+                if (url != null) {
+                    window.localStorage.setItem("bgUrl", url)
+                } else return
+            }
             storage.setItem('bgSource', e.target.value)
             window.tabContext.updateBackground()
-
-            if (e.target.value === '3') {
-                const input = document.createElement('input')
-                input.type = 'file'
-                input.onchange = e => {
-                    const file = e.target.files[0];
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file)
-
-                    reader.onload = readerEvent => {
-                        const content = readerEvent.target.result
-                        console.log(content)
-                        window.localStorage.setItem("bgUrl", content)
-                        window.tabContext.updateBackground()
-                    }
-
-                }
-                input.click()
-            }
         }
     }
 

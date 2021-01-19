@@ -238,12 +238,12 @@ class TabContext {
         const fetchFromUrl = async () => {
             return {
                 src: storage.getItem("bgUrl"),
-                attribution: `Local image`
+                attribution: ``
             }
         }
 
         const preferredSource = storage.getItem("bgSource")
-        let bgPromise = Promise.reject()
+        let bgPromise
         if (!preferredSource || preferredSource === '1')
             bgPromise = fetchFromGEarth()
         if (preferredSource === '2')
@@ -251,6 +251,7 @@ class TabContext {
         if (preferredSource === '3')
             bgPromise = fetchFromUrl()
 
+        if (!bgPromise) bgPromise = Promise.reject()
         bgPromise.then(res => {
             dom.style.backgroundImage = `url(${res.src})`
             attribute.innerHTML = res.attribution
