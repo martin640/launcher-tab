@@ -151,10 +151,8 @@ class TabContext {
         this.mainGrid = document.getElementById('ref-lay-grid')
         this.sampleGrid = document.getElementById('ref-lay-grid-copy')
         this.updateBackground()
-        this.onLayoutParamsChange = () => {
-        }
-        this.saveLayout = () => {
-        }
+        this.onLayoutParamsChange = () => { }
+        this.saveLayout = () => { }
 
         const reloadLayout = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
         document.onload = window.onresize = reloadLayout
@@ -259,10 +257,10 @@ class TabContext {
     }
 
     async probeLayoutInfo() {
-        const computedStyle = window.getComputedStyle(this.mainGrid)
+        const computedStyle = window.getComputedStyle(this.sampleGrid)
         const old = {...this.gridSizeInfo}
-        this.gridSizeInfo.width = this.mainGrid.clientWidth
-        this.gridSizeInfo.height = this.mainGrid.clientHeight
+        this.gridSizeInfo.width = this.sampleGrid.clientWidth
+        this.gridSizeInfo.height = this.sampleGrid.clientHeight
         this.gridSizeInfo.columns = computedStyle.gridTemplateColumns.split(" ").length
         this.gridSizeInfo.rows = computedStyle.gridTemplateRows.split(" ").length
         // cache grid size for faster loading
@@ -270,17 +268,6 @@ class TabContext {
         this.storage.setItem("cache-grid-y", String(this.gridSizeInfo.rows))
 
         this._recalculateLayout()
-
-        this.sampleGrid.innerHTML = ''
-        for (let a = 0; a < this.gridSizeInfo.columns; a++) {
-            for (let b = 0; b < this.gridSizeInfo.rows; b++) {
-                const sampleItem = document.createElement("div")
-                sampleItem.style.gridArea = `${b + 1} / ${a + 1} / span 1 / span 1`
-                sampleItem.style.border = "1px dashed #ffffff55"
-                this.sampleGrid.appendChild(sampleItem)
-            }
-        }
-
         this.onLayoutParamsChange(old, {...this.gridSizeInfo})
     }
 
@@ -411,7 +398,9 @@ class TabContext {
                 widget.changeLayout(newParams)
                 this.saveLayout(this.widgets)
             } else el.style.gridArea = gridPosition
-            this.sampleGrid.style.display = "none"
+
+            this.sampleGrid.innerHTML = ''
+
             tmpGridBackdrop.remove()
         }
         const elementDrag = (e) => {
@@ -423,9 +412,11 @@ class TabContext {
             el.style.top = a1 + "px"
             el.style.left = a2 + "px"
 
-            // todo highlight rows and columns where widget will be placed
             newParams = this._getNewLayoutParams(a1, a2)
-            tmpGridBackdrop.style.gridArea = `${newParams.pY + 1} / ${newParams.pX + 1} / span ${widget.layout.measured.h} / span ${widget.layout.measured.w}`
+            let backdropGridArea = `${newParams.pY + 1} / ${newParams.pX + 1} / `
+            backdropGridArea += `span ${Math.min(widget.layout.measured.h, this.gridSizeInfo.rows - newParams.pY)} / `
+            backdropGridArea += `span ${Math.min(widget.layout.measured.w, this.gridSizeInfo.columns - newParams.pX)}`
+            tmpGridBackdrop.style.gridArea = backdropGridArea
         }
 
         drag.onmousedown = (e) => {
@@ -439,6 +430,15 @@ class TabContext {
             tmpGridBackdrop = document.createElement('div')
             tmpGridBackdrop.style.backgroundColor = "#ffffff33"
             tmpGridBackdrop.style.border = "2px solid #ffffff66"
+
+            for (let a = 0; a < this.gridSizeInfo.columns; a++) {
+                for (let b = 0; b < this.gridSizeInfo.rows; b++) {
+                    const sampleItem = document.createElement("div")
+                    sampleItem.style.gridArea = `${b + 1} / ${a + 1} / span 1 / span 1`
+                    sampleItem.style.border = "1px dashed #ffffff55"
+                    this.sampleGrid.appendChild(sampleItem)
+                }
+            }
             this.sampleGrid.appendChild(tmpGridBackdrop)
 
             el.style.width = el.clientWidth + "px"
@@ -451,7 +451,6 @@ class TabContext {
             gridPosition = el.style.gridArea
             el.style.gridArea = ""
 
-            this.sampleGrid.style.display = "grid"
             document.onmouseup = closeDragElement
             document.onmousemove = elementDrag
             elementDrag(e)
