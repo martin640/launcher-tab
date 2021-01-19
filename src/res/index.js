@@ -36,11 +36,12 @@ class ClockWidget extends Widget {
         container.appendChild(this.timeEl)
 
         this.secondRowEl = document.createElement('span')
-        this.secondRowEl.style.display = "block"
+        this.secondRowEl.style.display = "flex"
         this.secondRowEl.style.textAlign = "center"
         this.secondRowEl.style.fontSize = "4vh"
         this.secondRowEl.style.fontWeight = "200"
         this.secondRowEl.style.textShadow = "0 0 2px gray"
+        this.secondRowEl.style.alignItems = "center"
         container.appendChild(this.secondRowEl)
 
         this.dateEl = document.createElement('span')
