@@ -36,7 +36,7 @@ class ClockWidget extends Widget {
 
         this.secondRowEl = document.createElement('span')
         this.secondRowEl.style.display = "flex"
-        this.secondRowEl.style.textAlign = "center"
+        this.secondRowEl.style.alignItems = "center"
         this.secondRowEl.style.fontSize = "2rem"
         this.secondRowEl.style.fontWeight = "200"
         this.secondRowEl.style.textShadow = "0 0 2px gray"
@@ -47,6 +47,8 @@ class ClockWidget extends Widget {
         this.secondRowEl.appendChild(this.dateEl)
 
         this.weatherEl = document.createElement('a')
+        this.weatherEl.style.display = "inline-flex"
+        this.weatherEl.style.alignItems = "center"
         this.weatherEl.style.color = "white"
         this.weatherEl.style.textDecoration = "none"
         this.secondRowEl.appendChild(this.weatherEl)

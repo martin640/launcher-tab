@@ -48,7 +48,7 @@ body, html {
 .lt-control-options div.active:after { background-color: #ffa344 }
 .lt-control-options div:hover { background-color: #ffffff33 }
 .lt-control-options div img { max-height: 16px; max-width: 16px; opacity: 0.5 }
-.lt-control-options div:hover img { opacity: 1 }
+.lt-control-options div:hover img, .lt-control-options div.opaque img { opacity: 1 }
 
 #lt-control-attribution {
     position: absolute; padding: 16px;
