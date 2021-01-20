@@ -106,8 +106,9 @@ body, html {
 }
 .lt-api-widget .handle {
     display: none; position: absolute; top: 0; left: 0;
-    max-width: 16px; max-height: 16px; padding: 5px; cursor: grabbing;
+    max-width: 16px; max-height: 16px; padding: 5px; cursor: grab;
 }
+.lt-api-widget .handle:active { cursor: grabbing }
 .lt-api-widget:hover .handle {
     display: block;
 }

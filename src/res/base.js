@@ -4,6 +4,7 @@ class Widget {
         this.__state = data
     }
 
+    // methods below this line should not be overridden
     get id() {
         return this.__state.id
     }
@@ -42,23 +43,20 @@ class Widget {
     }
 
     /**
-     * This function usually gets called by API when user requests to reload layout.
+     * Changes widget's layout parameters and re-calculates all widgets.
+     * @param data new abstract layout parameters
      */
-    reset() {
-        if (this.__state.attached) {
-            this.unload()
-            this.__state.nestedContainer.innerHTML = ''
-            this.prepareLayout(this.__state.nestedContainer, this.__state.extra)
-            this.update(this.__state.nestedContainer, this.__state.extra)
-        }
-    }
-
     changeLayout(data) {
         this.__state.layout.abstract = {...this.__state.layout.abstract, ...data}
         this.__context._recalculateLayout()
     }
 
-    measure(gridStateList) {
+    /**
+     * Functions is used to measure widget bounds within grid and set up `grid-area` css property
+     * @param gridStateList 2D array containing booleans indicating used space in grid
+     * @private
+     */
+    _measure(gridStateList) {
         if (this.__state.attached) {
             const a = this.__state.layout.abstract
             const b = this.__state.layout.measured
@@ -111,6 +109,23 @@ class Widget {
     }
 
     /**
+     * Resets widget container and calls prepareLayout() and update() again. Widget should unload all pending tasks
+     * in unload() in order to avoid unexpected state.
+     * @private
+     */
+    _reset() {
+        if (this.__state.attached) {
+            this.unload()
+            this.__state.nestedContainer.innerHTML = ''
+            this.prepareLayout(this.__state.nestedContainer, this.__state.extra)
+            this.update(this.__state.nestedContainer, this.__state.extra)
+        }
+    }
+
+
+    // methods below this line may be overridden
+
+    /**
      * Called after constructing widget. Widget should create its layout here.
      * @see update
      */
@@ -131,10 +146,10 @@ class Widget {
      * Called when widget is being destroyed or reset. Widget should cancel all pending tasks here.
      * Widget should not make any further changes to DOM because API will automatically remove elements.
      */
-    unload() {
-    }
+    unload() { }
 }
 
+// todo refactor TabContext to mount to the document dynamically and let implementation handle debugging with callbacks
 class TabContext {
     constructor() {
         this.storage = window.localStorage
@@ -364,7 +379,7 @@ class TabContext {
     _recalculateLayout() {
         const newLayoutStateList = this._resetLayoutStateList()
         for (let i = 0; i < this.widgets.length; i++) {
-            this.widgets[i].measure(newLayoutStateList)
+            this.widgets[i]._measure(newLayoutStateList)
         }
     }
 
@@ -486,8 +501,7 @@ class TabContext {
     rebuildLayout() {
         for (let i = 0; i < this.widgets.length; i++) {
             const og = this.widgets[i]
-            const constructor = og.__proto__.constructor
-            og.reset()
+            og._reset()
             this.updateDebugWidget()
         }
     }
