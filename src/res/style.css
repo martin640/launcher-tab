@@ -40,11 +40,15 @@ body, html {
     position: absolute; right: 0; top: 0;
     color: #ffffff; text-shadow: 0 0 8px black;
 }
-.lt-control-options div { display: inline-block; transition: background-color 150ms ease-in-out; position: relative; cursor: pointer }
+.lt-control-options div {
+    display: inline-block; transition: background-color 150ms ease-in-out;
+    position: relative; cursor: pointer; padding: 12px;
+}
 .lt-control-options div:after { content: ''; position: absolute; right: 0; bottom: 0; left: 0; height: 3px }
 .lt-control-options div.active:after { background-color: #ffa344 }
 .lt-control-options div:hover { background-color: #ffffff33 }
-.lt-control-options img { max-height: 18px; max-width: 18px; margin: 16px }
+.lt-control-options div img { max-height: 16px; max-width: 16px; opacity: 0.2 }
+.lt-control-options div:hover img { opacity: 1 }
 
 #lt-control-attribution {
     position: absolute; padding: 16px;
