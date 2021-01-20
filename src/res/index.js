@@ -292,7 +292,7 @@ class MyCustomWidget extends Widget {
         })
     }
 
-    window.tabContext.saveLayout = (widgets) => {
+    window.tabContext.onSaveLayout = (widgets) => {
         layoutState = []
         for (let i = 0; i < widgets.length; i++) {
             const w = widgets[i]
@@ -353,7 +353,7 @@ class MyCustomWidget extends Widget {
 
         window.tabContext.createWidget(LinkWidget, {label: label, rel: url},
             undefined, undefined, 1, 1)
-        // todo call this internally
-        window.tabContext.saveLayout(window.tabContext.widgets)
+        window.tabContext.saveLayout()
     }
+    console.log(`[launcher-tab] Page has been loaded in ${Math.round(performance.now())} ms`)
 })()

@@ -171,7 +171,7 @@ class TabContext {
         this.sampleGrid = document.getElementById('ref-lay-grid-copy')
         this.updateBackground()
         this.onLayoutParamsChange = () => { }
-        this.saveLayout = () => { }
+        this.onSaveLayout = () => { }
 
         const reloadLayout = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
         document.onload = window.onresize = reloadLayout
@@ -302,6 +302,10 @@ class TabContext {
         this.debugEl.innerHTML = data
     }
 
+    saveLayout() {
+        this.onSaveLayout(this.widgets)
+    }
+
     /**
      * Creates a new widget and attaches it to the grid
      * @param constructor reference to widget class
@@ -364,6 +368,15 @@ class TabContext {
         }
     }
 
+    _detachWidget(widget) {
+        widget.unload()
+        widget.topContainer.remove()
+        this.widgets = this.widgets.filter(x => x !== widget)
+        this.saveLayout()
+        this._recalculateLayout()
+        return widget
+    }
+
     _getNewId() {
         let id = -1
         A: while (true) {
@@ -408,11 +421,12 @@ class TabContext {
 
     _registerContainerAsDragView(widget) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0, posX = 0, posY = 0
-        let gridPosition = "", newParams, tmpGridBackdrop
+        let gridPosition = "", newParams, tmpGridBackdrop, deleteDropCoordinates
 
         const drag = widget.dragHandle, el = widget.topContainer
+        const deleteDrop = document.getElementById('lt-control-option-delete')
 
-        const closeDragElement = () => {
+        const closeDragElement = (e) => {
             document.onmouseup = null
             document.onmousemove = null
 
@@ -425,12 +439,17 @@ class TabContext {
             el.style.left = ""
             if (newParams) {
                 widget.changeLayout(newParams)
-                this.saveLayout(this.widgets)
+                this.saveLayout()
             } else el.style.gridArea = gridPosition
 
             this.sampleGrid.innerHTML = ''
-
             tmpGridBackdrop.remove()
+            deleteDrop.style.display = 'none'
+
+            const isWithinDeleteBounds =
+                ((e.clientX > deleteDropCoordinates.x) && (e.clientX < (deleteDropCoordinates.x + deleteDropCoordinates.w))) &&
+                ((e.clientY > deleteDropCoordinates.y) && (e.clientY < (deleteDropCoordinates.y + deleteDropCoordinates.h)))
+            if (isWithinDeleteBounds) this._detachWidget(widget)
         }
         const elementDrag = (e) => {
             e.preventDefault()
@@ -450,8 +469,6 @@ class TabContext {
 
         drag.onmousedown = (e) => {
             e.preventDefault()
-            // todo you better remove this
-            //const widgetLabel = document.getElementById("widget-label")
             pos3 = e.clientX
             pos4 = e.clientY
             posX = el.offsetLeft
@@ -479,6 +496,13 @@ class TabContext {
             // reset position within grid to place widget on top left corner of grid
             gridPosition = el.style.gridArea
             el.style.gridArea = ""
+
+            deleteDrop.style.display = ''
+            const u = deleteDrop.getBoundingClientRect()
+            deleteDropCoordinates = {
+                x: u.left, y: u.top,
+                w: deleteDrop.clientWidth, h: deleteDrop.clientHeight
+            }
 
             document.onmouseup = closeDragElement
             document.onmousemove = elementDrag
