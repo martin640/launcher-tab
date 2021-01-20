@@ -29,7 +29,7 @@ class ClockWidget extends Widget {
         this.timeEl = document.createElement('span')
         this.timeEl.style.display = "block"
         this.timeEl.style.textAlign = "center"
-        this.timeEl.style.fontSize = "16vh"
+        this.timeEl.style.fontSize = "8rem"
         this.timeEl.style.fontWeight = "100"
         this.timeEl.style.textShadow = "0 0 2px gray"
         container.appendChild(this.timeEl)
@@ -37,7 +37,7 @@ class ClockWidget extends Widget {
         this.secondRowEl = document.createElement('span')
         this.secondRowEl.style.display = "flex"
         this.secondRowEl.style.textAlign = "center"
-        this.secondRowEl.style.fontSize = "4vh"
+        this.secondRowEl.style.fontSize = "2rem"
         this.secondRowEl.style.fontWeight = "200"
         this.secondRowEl.style.textShadow = "0 0 2px gray"
         this.secondRowEl.style.alignItems = "center"
@@ -249,7 +249,7 @@ class MyCustomWidget extends Widget {
     const layoutStateSaved = storage.getItem('layoutState')
     if (!layoutStateSaved || !(layoutState = JSON.parse(layoutStateSaved))) {
         layoutState = [
-            {type: "ClockWidget", layout: {pX: 0, pY: 0, w: 5, h: 2}}
+            {type: "ClockWidget", layout: {pX: 0, pY: 0, w: 6, h: 2}}
         ]
         for (let i = 0; i < 10; i++) {
             layoutState.push({
