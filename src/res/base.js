@@ -426,7 +426,6 @@ class TabContext {
         const drag = widget.dragHandle, el = widget.topContainer
         const deleteDrop = document.getElementById('lt-control-option-delete')
 
-
         const closeDragElement = (e) => {
             document.onmouseup = null
             document.onmousemove = null
