@@ -250,7 +250,7 @@ class MyCustomWidget extends Widget {
     const layoutStateSaved = storage.getItem('layoutState')
     if (!layoutStateSaved || !(layoutState = JSON.parse(layoutStateSaved))) {
         layoutState = [
-            {type: "ClockWidget", id: ++widgetIdPool, layout: {pX: 0, pY: 0, w: 0, h: 3, rW: -1}}
+            {type: "ClockWidget", id: ++widgetIdPool, layout: {pX: 0, pY: 0, w: 6, h: 4}}
         ]
         for (let i = 0; i < 10; i++) {
             layoutState.push({
@@ -336,7 +336,7 @@ class MyCustomWidget extends Widget {
                 const url = prompt("Image address")
                 if (url != null) {
                     window.localStorage.setItem("bgUrl", url)
-                } else return
+                } else return e.target.value = storage.getItem('bgSource') || "1"
             }
             storage.setItem('bgSource', e.target.value)
             window.tabContext.updateBackground()
