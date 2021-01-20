@@ -426,6 +426,7 @@ class TabContext {
         const drag = widget.dragHandle, el = widget.topContainer
         const deleteDrop = document.getElementById('lt-control-option-delete')
 
+
         const closeDragElement = (e) => {
             document.onmouseup = null
             document.onmousemove = null
@@ -473,6 +474,10 @@ class TabContext {
             pos4 = e.clientY
             posX = el.offsetLeft
             posY = el.offsetTop
+            deleteDrop.style.display = ""
+            const controlOptions = document.getElementById('lt-control-options')
+            console.log(controlOptions)
+            controlOptions.style.opacity = "1"
             tmpGridBackdrop = document.createElement('div')
             tmpGridBackdrop.style.backgroundColor = "#ffffff33"
             tmpGridBackdrop.style.border = "2px solid #ffffff66"
