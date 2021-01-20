@@ -4,6 +4,10 @@ class Widget {
         this.__state = data
     }
 
+    get id() {
+        return this.__state.id
+    }
+
     /**
      * @returns {Object} object containing widget's layout information
      */
@@ -314,6 +318,7 @@ class TabContext {
 
             const widget = new constructor(this, widgetData)
             if (widget) {
+                widgetData.id = this._getNewId()
                 this.widgets.push(widget)
 
                 this._recalculateLayout()
@@ -344,6 +349,18 @@ class TabContext {
         }
     }
 
+    _getNewId() {
+        let id = -1
+        A: while (true) {
+            id++
+            for (let i = 0; i < this.widgets.length; i++) {
+                const w = this.widgets[i]
+                if (w.id === id) continue A
+            }
+            return id
+        }
+    }
+
     _recalculateLayout() {
         const newLayoutStateList = this._resetLayoutStateList()
         for (let i = 0; i < this.widgets.length; i++) {
@@ -361,11 +378,6 @@ class TabContext {
         }
 
         return arr
-    }
-
-    /* @deprecated */
-    setEditModeActive(b) {
-
     }
 
     _getNewLayoutParams(top, left) {

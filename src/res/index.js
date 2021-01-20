@@ -1,6 +1,5 @@
 const store = chrome.storage.sync
 const storage = window.localStorage
-let widgetIdPool = 0
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 const getDateDetails = () => {
@@ -250,12 +249,11 @@ class MyCustomWidget extends Widget {
     const layoutStateSaved = storage.getItem('layoutState')
     if (!layoutStateSaved || !(layoutState = JSON.parse(layoutStateSaved))) {
         layoutState = [
-            {type: "ClockWidget", id: ++widgetIdPool, layout: {pX: 0, pY: 0, w: 6, h: 4}}
+            {type: "ClockWidget", layout: {pX: 0, pY: 0, w: 6, h: 4}}
         ]
         for (let i = 0; i < 10; i++) {
             layoutState.push({
                 type: "LinkWidget",
-                id: ++widgetIdPool,
                 extra: {topSiteNum: i},
                 layout: {pX: undefined, pY: undefined, w: 1, h: 1}
             })
@@ -272,12 +270,8 @@ class MyCustomWidget extends Widget {
             continue
         }
 
-        const w = window.tabContext.createWidget(targetClass, row.extra,
+        window.tabContext.createWidget(targetClass, row.extra,
             row.layout.pX, row.layout.pY, row.layout.w, row.layout.h, row.layout.rW, row.layout.rH)
-        if (row.id) {
-            w.id = row.id
-            if (w.id >= widgetIdPool) widgetIdPool = w.id+1
-        }
     }
 
     // load top sites into placeholder widgets
@@ -302,14 +296,11 @@ class MyCustomWidget extends Widget {
         layoutState = []
         for (let i = 0; i < widgets.length; i++) {
             const w = widgets[i]
-            if (w.id) {
-                layoutState.push({
-                    type: w.__proto__.constructor.name,
-                    id: w.id,
-                    extra: w.extra,
-                    layout: w.layout.abstract
-                })
-            }
+            layoutState.push({
+                type: w.__proto__.constructor.name,
+                extra: w.extra,
+                layout: w.layout.abstract
+            })
         }
         storage.setItem('layoutState', JSON.stringify(layoutState))
     }
@@ -360,9 +351,8 @@ class MyCustomWidget extends Widget {
         const label = prompt("Enter label")
         if (label === null) return
 
-        const w = window.tabContext.createWidget(LinkWidget, {label: label, rel: url},
+        window.tabContext.createWidget(LinkWidget, {label: label, rel: url},
             undefined, undefined, 1, 1)
-        w.id = ++widgetIdPool
         // todo call this internally
         window.tabContext.saveLayout(window.tabContext.widgets)
     }
