@@ -227,10 +227,12 @@ class TabContext {
             const idsList = (await (await fetch(`/res/gearthids.json`)).json()).ids
             if (!Array.isArray(idsList)) return error()
             const randomId = idsList[Math.floor(Math.random() * idsList.length)]
+            var gearththirds = ["TerraMetrics","CNES","Airbus","Maxar Technologies","Landsat","Copernicus", ]
+            var gearthatt = gearththirds[Math.floor(Math.random()*gearththirds.length)];
 
             return {
                 src: `https://www.gstatic.com/prettyearth/assets/full/${randomId}.jpg`,
-                attribution: `<a href="https://earth.google.com/web/">Photo from Google Earth (Map data ©2020 Google)</a>`
+                attribution: `<a href="https://earth.google.com/web/">Google Earth (Map data ©2020 Google) ${gearthatt}</a>`
             }
         }
         const fetchFromUrl = async () => {
