@@ -272,10 +272,10 @@ class TabContext {
     }
 
     updateDebugWidget() {
-        let data = "debugging enabled"
-        data += `, layout size: [${this.gridSizeInfo.width} × ${this.gridSizeInfo.height}] (${this.gridSizeInfo.columns} × ${this.gridSizeInfo.rows})`
-        data += `, widgets attached: ${this.widgets.length}`
-        data += `, updates/sec: ${this.renderStats.counterSnapshot}`
+        let data = ""
+        data += `<span class="sector">Layout size: ${this.gridSizeInfo.columns} × ${this.gridSizeInfo.rows} (${this.gridSizeInfo.width}px × ${this.gridSizeInfo.height}px)</span>`
+        data += `<span class="sector">Widgets attached: ${this.widgets.length}</span>`
+        data += `<span class="sector">Updates/sec: ${this.renderStats.counterSnapshot}</span>`
 
         this.debugEl.style.display = this.debugEnabled ? "block" : "none"
         this.debugEl.innerHTML = data

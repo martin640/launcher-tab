@@ -58,6 +58,9 @@ body, html {
     right: 0; bottom: 0;
     color: aquamarine; text-shadow: 0 0 8px black;
 }
+#lt-control-debug .sector {
+    padding-left: 16px;
+}
 
 .lt-layout {
     display: grid;
