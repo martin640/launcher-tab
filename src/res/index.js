@@ -336,7 +336,7 @@ class MyCustomWidget extends Widget {
                 const url = prompt("Image address")
                 if (url != null) {
                     window.localStorage.setItem("bgUrl", url)
-                } else return
+                } else return e.target.value = storage.getItem('bgSource') || "1"
             }
             storage.setItem('bgSource', e.target.value)
             window.tabContext.updateBackground()
