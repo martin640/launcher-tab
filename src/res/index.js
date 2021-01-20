@@ -274,7 +274,10 @@ class MyCustomWidget extends Widget {
 
         const w = window.tabContext.createWidget(targetClass, row.extra,
             row.layout.pX, row.layout.pY, row.layout.w, row.layout.h, row.layout.rW, row.layout.rH)
-        if (row.id) w.id = row.id
+        if (row.id) {
+            w.id = row.id
+            if (w.id >= widgetIdPool) widgetIdPool = w.id+1
+        }
     }
 
     // load top sites into placeholder widgets
@@ -351,9 +354,16 @@ class MyCustomWidget extends Widget {
     document.getElementById('lt-control-option-pref-close').onclick =
         () => document.getElementById('lt-preferences').classList.remove('open')
     document.getElementById('lt-control-option-reload').onclick = () => window.tabContext.rebuildLayout()
-    /*document.getElementById('options-menu-edit').onclick = () => {
-        // todo: use this to toggle resize mode
-        window.tabContext.setEditModeActive(!window.tabContext.editMode)
-        document.getElementById('options-menu-edit').classList.toggle("active", window.tabContext.editMode)
-    }*/
+    document.getElementById('lt-control-option-add-widget').onclick = () => {
+        const url = prompt("Enter link address")
+        if (url === null) return
+        const label = prompt("Enter label")
+        if (label === null) return
+
+        const w = window.tabContext.createWidget(LinkWidget, {label: label, rel: url},
+            undefined, undefined, 1, 1)
+        w.id = ++widgetIdPool
+        // todo call this internally
+        window.tabContext.saveLayout(window.tabContext.widgets)
+    }
 })()
