@@ -171,7 +171,7 @@ class TabContext {
         this.sampleGrid = document.getElementById('ref-lay-grid-copy')
         this.updateBackground()
         this.onLayoutParamsChange = () => { }
-        this.saveLayout = () => { }
+        this.onSaveLayout = () => { }
 
         const reloadLayout = () => this.probeLayoutInfo().then(() => this.updateDebugWidget())
         document.onload = window.onresize = reloadLayout
@@ -302,6 +302,10 @@ class TabContext {
         this.debugEl.innerHTML = data
     }
 
+    saveLayout() {
+        this.onSaveLayout(this.widgets)
+    }
+
     /**
      * Creates a new widget and attaches it to the grid
      * @param constructor reference to widget class
@@ -368,7 +372,7 @@ class TabContext {
         widget.unload()
         widget.topContainer.remove()
         this.widgets = this.widgets.filter(x => x !== widget)
-        this.saveLayout(this.widgets)
+        this.saveLayout()
         this._recalculateLayout()
         return widget
     }
@@ -435,7 +439,7 @@ class TabContext {
             el.style.left = ""
             if (newParams) {
                 widget.changeLayout(newParams)
-                this.saveLayout(this.widgets)
+                this.saveLayout()
             } else el.style.gridArea = gridPosition
 
             this.sampleGrid.innerHTML = ''
