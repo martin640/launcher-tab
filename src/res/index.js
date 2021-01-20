@@ -249,7 +249,7 @@ class MyCustomWidget extends Widget {
     const layoutStateSaved = storage.getItem('layoutState')
     if (!layoutStateSaved || !(layoutState = JSON.parse(layoutStateSaved))) {
         layoutState = [
-            {type: "ClockWidget", layout: {pX: 0, pY: 0, w: 6, h: 4}}
+            {type: "ClockWidget", layout: {pX: 0, pY: 0, w: 5, h: 2}}
         ]
         for (let i = 0; i < 10; i++) {
             layoutState.push({
