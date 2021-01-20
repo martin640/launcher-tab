@@ -475,9 +475,6 @@ class TabContext {
             posX = el.offsetLeft
             posY = el.offsetTop
             deleteDrop.style.display = ""
-            const controlOptions = document.getElementById('lt-control-options')
-            console.log(controlOptions)
-            controlOptions.style.opacity = "1"
             tmpGridBackdrop = document.createElement('div')
             tmpGridBackdrop.style.backgroundColor = "#ffffff33"
             tmpGridBackdrop.style.border = "2px solid #ffffff66"
