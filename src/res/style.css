@@ -1,0 +1,119 @@
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+@font-face {
+    font-family: Inter-regular;
+    src: url(Inter-Regular.ttf);
+}
+.toolset-padding-within {
+    -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
+}
+.toolset-noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+.lt-app-content {
+    height: 100%;
+    position: relative;
+    color: white;
+    overflow: hidden;
+    font-family: 'Inter-Regular', sans-serif;
+}
+.lt-app-content a { color: #96C5F4 }
+#lt-app-background {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-position: center;
+    background-size: cover;
+    background-color: #333;
+    filter: brightness(0.7);
+}
+
+.lt-control-options {
+    position: absolute; right: 0; top: 0; margin: 8px;
+    color: #ffffff; text-shadow: 0 0 8px black;
+}
+.lt-control-options div {
+    display: inline-block; transition: background-color 150ms ease-in-out;
+    position: relative; cursor: pointer; padding: 12px; border-radius: 5px;
+}
+.lt-control-options div:after { content: ''; position: absolute; right: 0; bottom: 0; left: 0; height: 3px }
+.lt-control-options div.active:after { background-color: #ffa344 }
+.lt-control-options div:hover { background-color: #ffffff33 }
+.lt-control-options div img { max-height: 16px; max-width: 16px; opacity: 0.7 }
+.lt-control-options div:hover img, .lt-control-options div.opaque img { opacity: 1 }
+
+#lt-control-attribution {
+    position: absolute; padding: 16px;
+    left: 0; bottom: 0;
+    color: #ffffff; text-shadow: 0 0 4px black;
+}
+#lt-control-attribution a { color: inherit; text-decoration: none }
+
+#lt-control-debug {
+    position: absolute; padding: 16px;
+    right: 0; bottom: 0;
+    color: aquamarine; text-shadow: 0 0 8px black;
+}
+#lt-control-debug .sector {
+    padding-left: 16px;
+}
+
+.lt-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    grid-template-rows: repeat(auto-fill, minmax(100px, 1fr));
+    grid-column-gap: 8px;
+    grid-row-gap: 8px;
+    position: absolute;
+    top: 40px; right: 16px; bottom: 40px; left: 16px;
+}
+
+#lt-preferences {
+    position: absolute; width: 350px; background-color: #21212199;
+    backdrop-filter: blur(12px); border-left: 1px solid #ffffff11;
+    top: 0; right: -355px; bottom: 0; padding: 16px;
+    overflow: auto;
+    transition: right 0.35s cubic-bezier(0.860, 0.000, 0.070, 1.000);
+}
+#lt-preferences.open { right: 0 }
+#lt-preferences .header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #ffffff33;
+    padding-bottom: 4px; margin-bottom: 8px;
+}
+#lt-preferences .header span {
+    font-size: 1.8em; font-weight: bold;
+}
+#lt-preferences .header #lt-control-option-pref-close {
+    display: inline-block; padding: 8px;
+}
+#lt-preferences .header img {
+    max-height: 12px; max-width: 12px;
+}
+.lt-preferences-row { display: flex; align-items: center; margin: 8px 0 }
+.lt-preferences-row span { margin: 0 8px }
+
+
+.lt-api-widget {
+    position: relative;
+}
+.lt-api-widget:hover {
+    outline: 2px dashed #ffffff22;
+}
+.lt-api-widget .handle {
+    display: none; position: absolute; top: 0; left: 0;
+    max-width: 16px; max-height: 16px; padding: 5px; cursor: grab;
+}
+.lt-api-widget .handle:active { cursor: grabbing }
+.lt-api-widget:hover .handle {
+    display: block;
+}

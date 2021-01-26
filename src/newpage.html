@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>New Tab</title>
+        <link rel="stylesheet" href="/res/style.css">
+    </head>
+    <body>
+        <div class="lt-app-content">
+            <div id="lt-app-background"></div>
+            <div class="lt-layout" id="ref-lay-grid-copy"></div>
+            <div class="lt-layout" id="ref-lay-grid"></div>
+            <div class="lt-control-options">
+                <div id="lt-control-option-delete" class="opaque" style="display: none"><img src="/res/icons/delete.svg"/></div>
+                <div id="lt-control-option-reload"><img src="/res/icons/refresh.svg"/></div>
+                <div id="lt-control-option-add-widget"><img src="/res/icons/add.svg"/></div>
+                <div id="lt-control-option-pref-open"><img src="/res/icons/gear.svg"/></div>
+            </div>
+            <div id="lt-control-attribution"></div>
+            <div id="lt-control-debug">Measuring layout...</div>
+            <div id="lt-preferences" class="toolset-padding-within">
+                <div class="header">
+                    <span>Preferences</span>
+                    <a href="#" id="lt-control-option-pref-close">
+                        <img src="/res/icons/close-button.svg"/>
+                    </a>
+                </div>
+                <label class="lt-preferences-row toolset-noselect">
+                    <input type="checkbox" id="lt-preference-HcX4j">
+                    <span>
+                        <abbr title="This might improve performance if you don't have shortcuts to top sites. This doesn't affect custom shortcuts or already loaded top sites shortcuts.">
+                            Don't load top sites
+                        </abbr>
+                    </span>
+                </label>
+                <label class="lt-preferences-row toolset-noselect">
+                    <input type="checkbox" id="lt-preference-v3i7X">
+                    <span>Allow debugging</span>
+                </label>
+                <label class="lt-preferences-row toolset-noselect">
+                    <input type="checkbox" id="lt-preference-44oRj" disabled>
+                    <span>Automatically wrap widgets</span>
+                </label>
+                <label class="lt-preferences-row toolset-noselect">
+                    <input type="checkbox" id="lt-preference-ssm2P">
+                    <span>Shortcuts: Use circle icon shape</span>
+                </label>
+                <label class="lt-preferences-row toolset-noselect">
+                    <span>Background source:</span>
+                    <select id="lt-preference-wPBCA">
+                        <option value="1">Google Earth</option>
+                        <option value="2">Picsum</option>
+                        <option value="3">Custom image...</option>
+                    </select>
+                </label>
+                <span class="lt-preferences-row toolset-noselect">
+                    <button id="lt-preference-8QFSB">Save config</button>
+                    <button id="lt-preference-lEZUZ">Load config</button>
+                </span>
+                <small style="display: block; margin-top: 24px">
+                    <a href="https://github.com/martin640/launcher-tab">launcher-tab</a> is project available under
+                    <a href="https://github.com/martin640/launcher-tab/blob/main/LICENSE">GPLv3 license</a>
+                </small>
+            </div>
+            <div style="display: none"><!-- remove this in the future and replace it with widgets -->
+                <div class="middle">
+                    <span style="font-size: 3vh;text-shadow: 0 0 2px gray;" id="battery"></span>
+                </div>
+                <div class="middle bottom" id="device">
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="/res/base.js"></script>
+    <script src="/res/index.js"></script>
+</html>

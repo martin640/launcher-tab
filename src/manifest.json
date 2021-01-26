@@ -1,0 +1,26 @@
+{
+  "manifest_version": 2,
+  "name": "launcher-tab",
+  "description": "Launcher-like Chrome extension replacing default new tab",
+  "version": "0.0.4",
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "sessions",
+    "tabs",
+    "topSites",
+    "search",
+    "unlimitedStorage",
+    "search",
+    "chrome://favicon/"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "newpage.html"
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  }
+}
