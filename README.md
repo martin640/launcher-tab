@@ -6,16 +6,16 @@ Open source Android launcher like new tab replacement for default new tab
 - Minimal size and fast loading time
 - API for writing widgets
 
-![Screenshot](https://i.imgur.com/lmH6exi.png "Screenshot")
+![Screenshot](https://i.ibb.co/QdyPc0c/Captura-de-pantalla-2021-01-28-123803.png "Screenshot")
 
 ### Installation
 #### Pre-built releases
 1. Download pre-built zip from https://github.com/martin640/launcher-tab/releases/
 2. Extract downloaded zip anywhere on your PC
-3. Open Chrome extensions ([Link](chrome://extensions/))
+3. Open Chrome extensions (chrome://extensions)
 4. Enable "Developer mode" in top right corner
 5. Click "Load Unpacked"
-6. Select "launcher-tab" folder from extracted zip
+6. Select "launcher-tab/src" folder from extracted zip
 
 #### Build minified version from source
 1. Clone repository
