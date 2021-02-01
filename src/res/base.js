@@ -167,6 +167,7 @@ class TabContext {
         }
         this.debugEnabled = this.storage.getItem('root-debug-enabled') === 'true'
         this.debugAlt = false
+        this.backgroundOpacity = Number(storage.getItem('bgOpacity') || 1)
         this.mainGrid = document.getElementById('ref-lay-grid')
         this.sampleGrid = document.getElementById('ref-lay-grid-copy')
         this.updateBackground()
@@ -225,6 +226,8 @@ class TabContext {
         const attribute = document.getElementById("lt-control-attribution")
         const storage = this.storage
 
+        dom.style.setProperty('--background-alpha', String(this.backgroundOpacity))
+
         const error = (e) => {
             const bgnum = (Math.floor(Math.random() * 6) + 1)
             console.log(`Error: ${e}, using built-in wallpapers num ${bgnum}`)
@@ -275,6 +278,17 @@ class TabContext {
             dom.style.backgroundImage = `url(${res.src})`
             attribute.innerHTML = res.attribution
         }).catch(error)
+    }
+
+    getBackgroundOpacity() {
+        return this.backgroundOpacity
+    }
+
+    setBackgroundOpacity(val) {
+        this.backgroundOpacity = val
+        const dom = document.getElementById("lt-app-background")
+        dom.style.setProperty('--background-alpha', String(val))
+        window.localStorage.setItem("bgOpacity", val)
     }
 
     async probeLayoutInfo() {

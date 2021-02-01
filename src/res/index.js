@@ -380,6 +380,11 @@ class MyCustomWidget extends Widget {
             window.tabContext.updateBackground()
         }
 
+        document.getElementById('lt-preference-emvci').value = window.tabContext.getBackgroundOpacity() * 100
+        const handleBackgroundOpacityChange = (val) => window.tabContext.setBackgroundOpacity(val / 100)
+        document.getElementById('lt-preference-emvci').onchange = (e) => handleBackgroundOpacityChange(e.target.value)
+        document.getElementById('lt-preference-emvci').oninput = (e) => handleBackgroundOpacityChange(e.target.value)
+
         document.getElementById('lt-preference-8QFSB').onclick = () => {
             const exportData = { }
             for (let i = 0; i < storage.length; i++) {

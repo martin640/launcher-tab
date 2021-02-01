@@ -29,12 +29,13 @@ body, html {
 }
 .lt-app-content a { color: #96C5F4 }
 #lt-app-background {
+    --background-alpha: 0.7;
     position: absolute;
     top: 0; right: 0; bottom: 0; left: 0;
     background-position: center;
     background-size: cover;
     background-color: #333;
-    filter: brightness(0.7);
+    filter: brightness(var(--background-alpha));
 }
 
 .lt-control-options {
