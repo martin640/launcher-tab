@@ -229,9 +229,8 @@ class TabContext {
         dom.style.setProperty('--background-alpha', String(this.backgroundOpacity))
 
         const error = (e) => {
-            const bgnum = (Math.floor(Math.random() * 6) + 1)
-            console.log(`Error: ${e}, using built-in wallpapers num ${bgnum}`)
-            dom.style.backgroundImage = `url(res/bg/${bgnum}.jpg)`
+            console.log(`Error: ${e}, using built-in wallpaper`)
+            dom.style.backgroundImage = `url(res/bg/fallback.jpg)`
         }
         const fetchFromPicsum = async () => {
             const res = await fetch('https://picsum.photos/1900/900')
@@ -249,8 +248,8 @@ class TabContext {
             const idsList = (await (await fetch(`/res/gearthids.json`)).json()).ids
             if (!Array.isArray(idsList)) return error()
             const randomId = idsList[Math.floor(Math.random() * idsList.length)]
-            var gearththirds = ["TerraMetrics","CNES","Airbus","Maxar Technologies","Landsat","Copernicus", ]
-            var gearthatt = gearththirds[Math.floor(Math.random()*gearththirds.length)];
+            const gearththirds = ["TerraMetrics","CNES","Airbus","Maxar Technologies","Landsat","Copernicus", ]
+            const gearthatt = gearththirds[Math.floor(Math.random() * gearththirds.length)]
 
             return {
                 src: `https://www.gstatic.com/prettyearth/assets/full/${randomId}.jpg`,

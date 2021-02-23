@@ -12,7 +12,8 @@
     "search",
     "unlimitedStorage",
     "search",
-    "chrome://favicon/"
+    "chrome://favicon/",
+    "chrome://favicon2/"
   ],
   "chrome_url_overrides": {
     "newtab": "newpage.html"

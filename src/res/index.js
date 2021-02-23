@@ -178,8 +178,10 @@ class LinkWidget extends Widget {
 		this.innerView = document.createElement('a')
 		container.appendChild(this.innerView)
 
+        this.iconWrapper = document.createElement('div')
+        this.innerView.appendChild(this.iconWrapper)
 		this.iconEl = document.createElement('img')
-		this.innerView.appendChild(this.iconEl)
+		this.iconWrapper.appendChild(this.iconEl)
 
 		this.labelEl = document.createElement('span')
 		this.innerView.appendChild(this.labelEl)
@@ -197,15 +199,23 @@ class LinkWidget extends Widget {
 		this.innerView.style.textDecoration = "none"
 		this.innerView.href = extra.rel
 
+        this.iconWrapper.style.display = "flex"
+        this.iconWrapper.style.width = "50px"
+        this.iconWrapper.style.height = "50px"
+        this.iconWrapper.style.backgroundColor = extra.rel ? (extra.color || "#e9e9e9") : "#ffffff11";
+        this.iconWrapper.style.alignItems = "center"
+        this.iconWrapper.style.justifyContent = "center"
+        this.iconWrapper.style.borderRadius =
+            storage.getItem('shortcut-circle') === 'true' ? "50%" : "25%"
+        this.iconWrapper.style.marginBottom = "8px"
+
+        this.iconEl.style.width = "24px"
+        this.iconEl.style.height = "24px"
 		this.iconEl.style.display = "block"
-		this.iconEl.style.width = "24px"
-		this.iconEl.style.height = "24px"
-        this.iconEl.style.backgroundColor = extra.rel ? (extra.color || "#e9e9e9") : "#ffffff11";
-        this.iconEl.style.padding = "12px"
-		this.iconEl.style.borderRadius =
-			storage.getItem('shortcut-circle') === 'true' ? "50%" : "25%"
-		this.iconEl.style.marginBottom = "8px"
-		this.iconEl.src = `chrome://favicon/${extra.rel}`
+        this.iconEl.onerror = () => {
+            this.iconEl.src = `chrome://favicon/${extra.rel}`
+        }
+        this.iconEl.src = `chrome://favicon/size/32@1x/${extra.rel}`
 
 		this.labelEl.style.overflow = "hidden"
 		this.labelEl.style.textOverflow = "ellipsis"
