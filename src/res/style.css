@@ -4,9 +4,20 @@ body, html {
 }
 
 @font-face {
-    font-family: Inter-regular;
-    src: url(Inter-Regular.ttf);
+    font-family: Inter;
+    src: url(fonts/Inter-Regular.ttf);
 }
+
+@font-face {
+    font-family: Roboto;
+    src: url(fonts/Roboto-Regular.ttf);
+}
+
+@font-face {
+    font-family: Lato;
+    src: url(fonts/Lato-Regular.ttf);
+}
+
 .toolset-padding-within {
     -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
 }
@@ -25,7 +36,7 @@ body, html {
     position: relative;
     color: white;
     overflow: hidden;
-    font-family: 'Inter-Regular', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 .lt-app-content a { color: #96C5F4 }
 #lt-app-background {
