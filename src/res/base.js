@@ -156,8 +156,8 @@ class TabContext {
 
         this.gridSizeInfo = {
             width: -1, height: -1,
-            columns: Number(this.storage.getItem('cache-grid-x') || -1),
-            rows: Number(this.storage.getItem('cache-grid-y') || -1),
+            columns: Number(this.storage.getItem('lt-cache-grid-x') || -1),
+            rows: Number(this.storage.getItem('lt-cache-grid-y') || -1),
             layoutStateList: []
         }
         this.widgets = []
@@ -165,9 +165,9 @@ class TabContext {
             counter: 0, counterSnapshot: 0,
             start: Date.now()
         }
-        this.debugEnabled = this.storage.getItem('root-debug-enabled') === 'true'
+        this.debugEnabled = this.storage.getItem('lt-root-debug-enabled') === 'true'
         this.debugAlt = false
-        this.backgroundOpacity = Number(storage.getItem('bgOpacity') || 1)
+        this.backgroundOpacity = Number(storage.getItem('lt-bgOpacity') || 1)
         this.mainGrid = document.getElementById('ref-lay-grid')
         this.sampleGrid = document.getElementById('ref-lay-grid-copy')
         this.updateBackground()
@@ -256,12 +256,12 @@ class TabContext {
         }
         const fetchFromUrl = async () => {
             return {
-                src: storage.getItem("bgUrl"),
+                src: storage.getItem("lt-bgUrl"),
                 attribution: ``
             }
         }
 
-        const preferredSource = storage.getItem("bgSource")
+        const preferredSource = storage.getItem("lt-bgSource")
         let bgPromise
         if (!preferredSource || preferredSource === '1')
             bgPromise = fetchFromGEarth()
@@ -285,7 +285,7 @@ class TabContext {
         this.backgroundOpacity = val
         const dom = document.getElementById("lt-app-background")
         dom.style.setProperty('--background-alpha', String(val))
-        window.localStorage.setItem("bgOpacity", val)
+        window.localStorage.setItem("lt-bgOpacity", val)
     }
 
     async probeLayoutInfo() {
@@ -296,8 +296,8 @@ class TabContext {
         this.gridSizeInfo.columns = computedStyle.gridTemplateColumns.split(" ").length
         this.gridSizeInfo.rows = computedStyle.gridTemplateRows.split(" ").length
         // cache grid size for faster loading
-        this.storage.setItem("cache-grid-x", String(this.gridSizeInfo.columns))
-        this.storage.setItem("cache-grid-y", String(this.gridSizeInfo.rows))
+        this.storage.setItem("lt-cache-grid-x", String(this.gridSizeInfo.columns))
+        this.storage.setItem("lt-cache-grid-y", String(this.gridSizeInfo.rows))
 
         this._recalculateLayout()
         this.onLayoutParamsChange(old, {...this.gridSizeInfo})
@@ -526,20 +526,24 @@ class TabContext {
      * Calls update on all widgets effectively updating entire grid
      */
     updateAllWidgets() {
+        const a = Date.now()
         for (let i = 0; i < this.widgets.length; i++) {
             this.widgets[i].invalidate()
         }
+        console.log(`[base@launcher-tab] updateAllWidgets() took ${Date.now() - a} ms`)
     }
 
     /**
      * Destroys all widgets and recreates them with same parameters as they were created
      */
     rebuildLayout() {
+        const a = Date.now()
         for (let i = 0; i < this.widgets.length; i++) {
             const og = this.widgets[i]
             og._reset()
             this.updateDebugWidget()
         }
+        console.log(`[base@launcher-tab] rebuildLayout() took ${Date.now() - a} ms`)
     }
 
     /**
