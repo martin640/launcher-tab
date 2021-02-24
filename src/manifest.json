@@ -11,8 +11,7 @@
     "topSites",
     "search",
     "unlimitedStorage",
-    "chrome://favicon/",
-    "chrome://favicon2/"
+    "chrome://favicon/"
   ],
   "chrome_url_overrides": {
     "newtab": "newpage.html"

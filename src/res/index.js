@@ -51,6 +51,11 @@ const getDateDetails = () => {
         year: yyyy
     }
 }
+JSON.parseFailSafe = (input, fallback) => {
+    try {
+        return JSON.parse(input) || fallback
+    } catch (e) { return fallback }
+}
 const storageGetBoolean = (key, fallback = false) => {
     const v = storage.getItem(key)
     return v === null ? fallback : v === 'true'
@@ -104,8 +109,23 @@ class ClockWidget extends Widget {
         this.weatherEl.appendChild(this.weatherTempEl)
 
         this.timeUpdateTimer = setInterval(() => this.invalidate(), 1000)
-        this.weatherUpdateTimer = setInterval(() => this.fetchWeather(), 900000)
-        this.fetchWeather()
+
+        this.weatherCache = JSON.parseFailSafe(storage.getItem('lt-weather-cache'), {})
+        const updateWeather = () => {
+            this.weatherUpdateTimer = setInterval(() => this.fetchWeather(), 900000)
+            this.fetchWeather()
+        }
+        if (this.weatherCache.data) {
+            const nextTimerTrigger = (this.weatherCache.lastUpdate + 900000)
+
+            if (nextTimerTrigger <= Date.now()) {
+                this.weatherUpdateTimer = setTimeout(updateWeather, nextTimerTrigger - Date.now())
+            } else {
+                console.log(`Next weather update: ${new Date(nextTimerTrigger)}`)
+            }
+        } else {
+            updateWeather()
+        }
 
         this.timeEl.onmouseenter = () => {
             this.timeHovered = true
@@ -127,7 +147,7 @@ class ClockWidget extends Widget {
         try {
             const ipApiRes = await fetch(`http://ip-api.com/json/?fields=countryCode,city`)
             const ipApiJson = await ipApiRes.json()
-            city = `${ipApiJson.city}, ${ipApiJson.countryCode}`
+            this.weatherCache.city = city = `${ipApiJson.city}, ${ipApiJson.countryCode}`
         } catch (e) {
             return console.warn("Geolocation failed")
         }
@@ -135,17 +155,9 @@ class ClockWidget extends Widget {
         fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${unit}&appid=422958391a36158a7baf2910a96df05c`)
             .then(res => res.json())
             .then(res => {
-                let icon = '', weatherId = res.weather[0].id
-                if (weatherId === 800) icon = '/res/weather-icons/021-sun.svg'
-                else if (weatherId >= 200 && weatherId < 300) icon = '/res/weather-icons/021-storm.svg'
-                else if (weatherId >= 300 && weatherId < 600) icon = '/res/weather-icons/021-rain-2.svg'
-                else if (weatherId >= 600 && weatherId < 700) icon = '/res/weather-icons/021-snowing-1.svg'
-                else if (weatherId > 800 && weatherId < 810) icon = '/res/weather-icons/021-cloudy-1.svg'
-
-                this.weatherEl.title = city
-                this.weatherEl.href = `https://openweathermap.org/city/${res.id}`
-                this.weatherIconEl.src = icon
-                this.weatherTempEl.innerHTML = `${Math.round(res.main.temp)} °C`
+                this.weatherCache.data = res // todo save
+                this.weatherCache.lastUpdate = Date.now()
+                storage.setItem('lt-weather-cache', JSON.stringify(this.weatherCache))
             })
             .catch(e => console.log(e))
     }
@@ -155,16 +167,26 @@ class ClockWidget extends Widget {
             h = this.checkTime(today.getHours()),
             m = this.checkTime(today.getMinutes()),
             s = this.checkTime(today.getSeconds())
-        //time = timeTo12HrFormat(time);
-        if (this.timeHovered) {
-            this.timeEl.innerHTML = `${h}:${m}:${s}`
-        } else {
-            this.timeEl.innerHTML = `${h}:${m}`
-        }
+        // time = timeTo12HrFormat(time)   todo: support 12h format
+        this.timeEl.innerHTML = this.timeHovered ? `${h}:${m}:${s}` : `${h}:${m}`;
         this.timeEl.id = "clock";
-
         const d = getDateDetails()
         this.dateEl.innerHTML = `${d.day}, ${d.month} ${d.date}`
+
+        const res = this.weatherCache.data
+        if (res) {
+            let icon = '', weatherId = res.weather[0].id
+            if (weatherId === 800)                        icon = '/res/weather-icons/021-sun.svg'
+            else if (weatherId >= 200 && weatherId < 300) icon = '/res/weather-icons/021-storm.svg'
+            else if (weatherId >= 300 && weatherId < 600) icon = '/res/weather-icons/021-rain-2.svg'
+            else if (weatherId >= 600 && weatherId < 700) icon = '/res/weather-icons/021-snowing-1.svg'
+            else if (weatherId > 800 && weatherId < 810)  icon = '/res/weather-icons/021-cloudy-1.svg'
+
+            this.weatherEl.title = this.weatherCache.city
+            this.weatherEl.href = `https://openweathermap.org/city/${res.id}`
+            this.weatherIconEl.src = icon
+            this.weatherTempEl.innerHTML = `${Math.round(res.main.temp)} °C`
+        }
     }
 
     unload() {
@@ -188,6 +210,8 @@ class LinkWidget extends Widget {
 	}
 
 	update(container, extra) {
+        const labelValue = extra.label || extra.rel
+
 		this.innerView.style.display = "flex"
 		this.innerView.style.width = "100%"
 		this.innerView.style.height = "100%"
@@ -199,14 +223,13 @@ class LinkWidget extends Widget {
 		this.innerView.style.textDecoration = "none"
 		this.innerView.href = extra.rel
 
-        this.iconWrapper.style.display = "flex"
+        this.iconWrapper.style.display = labelValue ? "flex" : "none"
         this.iconWrapper.style.width = "50px"
         this.iconWrapper.style.height = "50px"
         this.iconWrapper.style.backgroundColor = extra.rel ? (extra.color || "#e9e9e9") : "#ffffff11";
         this.iconWrapper.style.alignItems = "center"
         this.iconWrapper.style.justifyContent = "center"
-        this.iconWrapper.style.borderRadius =
-            storage.getItem('shortcut-circle') === 'true' ? "50%" : "25%"
+        this.iconWrapper.style.borderRadius = storageGetBoolean('lt-shortcut-circle') ? "50%" : "25%"
         this.iconWrapper.style.marginBottom = "8px"
 
         this.iconEl.style.width = "24px"
@@ -223,9 +246,8 @@ class LinkWidget extends Widget {
 		this.labelEl.style.display = "-webkit-box"
 		this.labelEl.style.webkitLineClamp = "1"
 		this.labelEl.style.webkitBoxOrient = "vertical"
-        const labelValue = extra.label || extra.rel
-        this.labelEl.style.opacity = labelValue ? "" : "0.8"
-		this.labelEl.innerText = labelValue || "<placeholder>"
+        this.labelEl.style.opacity = labelValue ? "" : "0.5"
+		this.labelEl.innerText = labelValue || "<N/A>"
 	}
 }
 
@@ -300,7 +322,7 @@ class MyCustomWidget extends Widget {
 
     // parse saved layout state
     let layoutState
-    const layoutStateSaved = storage.getItem('layoutState')
+    const layoutStateSaved = storage.getItem('lt-layoutState')
     if (!layoutStateSaved || !(layoutState = JSON.parse(layoutStateSaved))) {
         layoutState = [
             {type: "ClockWidget", layout: {pX: 0, pY: 0, w: 6, h: 2}}
@@ -312,7 +334,7 @@ class MyCustomWidget extends Widget {
                 layout: {pX: undefined, pY: undefined, w: 1, h: 1}
             })
         }
-        storage.setItem('layoutState', JSON.stringify(layoutState))
+        storage.setItem('lt-layoutState', JSON.stringify(layoutState))
     }
 
     // attach saved widgets
@@ -329,7 +351,7 @@ class MyCustomWidget extends Widget {
     }
 
     // load top sites into placeholder widgets
-    if (!storage.getItem('no-top-sites')) {
+    if (!storage.getItem('lt-no-top-sites')) {
         // noinspection JSUnresolvedVariable
         chrome.topSites.get(res => {
             for (let i = 0; i < res.length; i++) {
@@ -356,43 +378,39 @@ class MyCustomWidget extends Widget {
                 layout: w.layout.abstract
             })
         }
-        storage.setItem('layoutState', JSON.stringify(layoutState))
+        storage.setItem('lt-layoutState', JSON.stringify(layoutState))
     }
 
     const loadOptionMenuItems = () => {
-        document.getElementById('lt-preference-HcX4j').checked = storageGetBoolean('no-top-sites')
+        document.getElementById('lt-preference-HcX4j').checked = storageGetBoolean('lt-no-top-sites')
         document.getElementById('lt-preference-HcX4j').onchange = (e) => {
-            storageSetBoolean('no-top-sites', e.target.checked)
+            storageSetBoolean('lt-no-top-sites', e.target.checked)
         }
 
         document.getElementById('lt-preference-v3i7X').checked = window.tabContext.debugEnabled
         document.getElementById('lt-preference-v3i7X').onchange = (e) => {
-            storageSetBoolean('root-debug-enabled', e.target.checked)
+            storageSetBoolean('lt-root-debug-enabled', e.target.checked)
             window.tabContext.debugEnabled = e.target.checked
             window.tabContext.updateDebugWidget()
         }
 
-        document.getElementById('lt-preference-ssm2P').checked = storageGetBoolean('shortcut-circle')
+        document.getElementById('lt-preference-ssm2P').checked = storageGetBoolean('lt-shortcut-circle')
         document.getElementById('lt-preference-ssm2P').onchange = (e) => {
-            storageSetBoolean('shortcut-circle', e.target.checked)
+            storageSetBoolean('lt-shortcut-circle', e.target.checked)
             window.tabContext.updateAllWidgets()
         }
 
-        document.getElementById('lt-preference-wPBCA').value = storage.getItem('bgSource') || "1"
+        document.getElementById('lt-preference-wPBCA').value = storage.getItem('lt-bgSource') || "1"
         document.getElementById('lt-preference-wPBCA').onchange = (e) => {
             if (e.target.value === '3') {
                 const url = prompt("Image address")
                 if (url != null) {
-                    window.localStorage.setItem("bgUrl", url)
-                } else return e.target.value = storage.getItem('bgSource') || "1"
+                    window.localStorage.setItem("lt-bgUrl", url)
+                } else return e.target.value = storage.getItem('lt-bgSource') || "1"
             }
-            storage.setItem('bgSource', e.target.value)
+            storage.setItem('lt-bgSource', e.target.value)
             window.tabContext.updateBackground()
         }
-
-        document.getElementsByClassName('lt-preference-font').value = storage.getItem('fontSource') || "1"
-        document.getElementsByClassName('lt-preference-font').onchange = (e) =>
-
 
         document.getElementById('lt-preference-emvci').value = window.tabContext.getBackgroundOpacity() * 100
         const handleBackgroundOpacityChange = (val) => window.tabContext.setBackgroundOpacity(val / 100)
